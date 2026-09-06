@@ -2,6 +2,7 @@ name: Agent runtime POC
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
     branches: [master]
     paths:
       - '.github/workflows/agent-runtime-ci.yml'
@@ -12,11 +13,14 @@ on:
       - 'desktop/patches/aw-tauri-agent-full-access.patch'
       - 'desktop/patches/aw-tauri-agent-bundled-runtime.patch'
       - 'desktop/patches/aw-tauri-installer-language.patch'
+      - 'desktop/patches/aw-tauri-agent-windows-navigation.patch'
+      - 'desktop/patches/aw-tauri-agent-reliability.patch'
+      - 'desktop/patches/ccb-claritide-reasoning.patch'
       - 'desktop/aw-tauri.iss'
       - 'desktop/scripts/prepare-ccb-runtime.sh'
       - 'desktop/workbench/**'
-      - 'desktop/tests/agent_workbench_bridge.test.cjs'
-      - 'desktop/tests/agent_workbench_html.test.cjs'
+      - 'desktop/tests/agent_workbench*.test.cjs'
+      - 'desktop/tests/ccb_gateway_request.test.cjs'
       - 'desktop/tests/seeseeyou_bridge.test.cjs'
       - 'desktop/tests/agent_nav_entry.test.cjs'
       - 'desktop/tests/installer_language.test.cjs'
@@ -35,6 +39,7 @@ concurrency:
 
 jobs:
   test-packaged-ccb:
+    if: ${{ !github.event.pull_request.draft }}
     name: Build and stage pinned CCB
     runs-on: ubuntu-22.04
     timeout-minutes: 30
@@ -68,6 +73,12 @@ jobs:
           CLAUDE_CODE_SKIP_CHROME_MCP_SETUP: '1'
         run: |
           test "$(git rev-parse HEAD)" = "$CLARITIDE_CCB_REVISION"
+          git apply --check "$GITHUB_WORKSPACE/custom-webui/desktop/patches/ccb-claritide-reasoning.patch"
+          git apply "$GITHUB_WORKSPACE/custom-webui/desktop/patches/ccb-claritide-reasoning.patch"
+          CLARITIDE_CCB_REQUEST_BODY_PATH="$PWD/src/services/api/openai/requestBody.ts" \
+            CLARITIDE_CCB_CONTEXT_PATH="$PWD/src/utils/context.ts" \
+            CLARITIDE_CCB_AUTOCOMPACT_PATH="$PWD/src/services/compact/autoCompact.ts" \
+            node --test "$GITHUB_WORKSPACE/custom-webui/desktop/tests/ccb_gateway_request.test.cjs"
           bun install --frozen-lockfile
           bun run build:vite
           mkdir -p "$RUNNER_TEMP/src-tauri"
@@ -82,6 +93,7 @@ jobs:
           test -f "$RUNNER_TEMP/src-tauri/agent-runtime/ccb/dist/cli-node.js"
 
   test-agent-runtime:
+    if: ${{ !github.event.pull_request.draft }}
     name: Patch, bridge, Rust, and ACL tests
     runs-on: ubuntu-22.04
     timeout-minutes: 60
@@ -126,6 +138,24 @@ jobs:
             "$GITHUB_WORKSPACE/custom-webui/desktop/patches/aw-tauri-installer-language.patch"
           git -C activitywatch/aw-tauri apply \
             "$GITHUB_WORKSPACE/custom-webui/desktop/patches/aw-tauri-installer-language.patch"
+          git -C activitywatch/aw-tauri apply --check \
+            "$GITHUB_WORKSPACE/custom-webui/desktop/patches/aw-tauri-agent-windows-navigation.patch"
+          git -C activitywatch/aw-tauri apply \
+            "$GITHUB_WORKSPACE/custom-webui/desktop/patches/aw-tauri-agent-windows-navigation.patch"
+          git -C activitywatch/aw-tauri apply --check \
+            "$GITHUB_WORKSPACE/custom-webui/desktop/patches/aw-tauri-agent-reliability.patch"
+          git -C activitywatch/aw-tauri apply \
+            "$GITHUB_WORKSPACE/custom-webui/desktop/patches/aw-tauri-agent-reliability.patch"
+          # Public adapter compatibility checks; the product repository's
+          # desktop-preflight assembles and compiles the complete native stack.
+          cp custom-webui/desktop/workbench/agent-workbench.html \
+            activitywatch/aw-tauri/src-tauri/assets/agent-workbench.html
+          cp custom-webui/desktop/workbench/agent_workbench_bridge.js \
+            activitywatch/aw-tauri/src-tauri/src/agent_workbench_bridge.js
+          cp custom-webui/desktop/workbench/seeseeyou_bridge.js \
+            activitywatch/aw-tauri/src-tauri/src/seeseeyou_bridge.js
+          cmp custom-webui/desktop/workbench/seeseeyou_bridge.js \
+            activitywatch/aw-tauri/src-tauri/src/seeseeyou_bridge.js
           cmp custom-webui/desktop/workbench/agent-workbench.html \
             activitywatch/aw-tauri/src-tauri/assets/agent-workbench.html
           cmp custom-webui/desktop/workbench/agent_workbench_bridge.js \
@@ -135,12 +165,6 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: '22'
-
-      - name: Generate upstream Tauri icons
-        working-directory: activitywatch/aw-tauri
-        run: |
-          npm ci
-          npm run tauri icon "$GITHUB_WORKSPACE/custom-webui/desktop/assets/seeseeyou-icon.png"
 
       - name: Test isolated JavaScript bridges
         run: |
@@ -153,9 +177,9 @@ jobs:
           CLARITIDE_INSTALLER_SCRIPT="$GITHUB_WORKSPACE/custom-webui/desktop/aw-tauri.iss" \
             node --test custom-webui/desktop/tests/installer_language.test.cjs
           CLARITIDE_AGENT_BRIDGE_PATH="$GITHUB_WORKSPACE/activitywatch/aw-tauri/src-tauri/src/agent_workbench_bridge.js" \
-            node --test custom-webui/desktop/tests/agent_workbench_bridge.test.cjs
-          CLARITIDE_AGENT_HTML_PATH="$GITHUB_WORKSPACE/activitywatch/aw-tauri/src-tauri/assets/agent-workbench.html" \
-            node --test custom-webui/desktop/tests/agent_workbench_html.test.cjs
+            CLARITIDE_AGENT_RUNTIME_PATH="$GITHUB_WORKSPACE/activitywatch/aw-tauri/src-tauri/src/agent_runtime.rs" \
+            CLARITIDE_AGENT_HTML_PATH="$GITHUB_WORKSPACE/activitywatch/aw-tauri/src-tauri/assets/agent-workbench.html" \
+            node --test custom-webui/desktop/tests/agent_workbench*.test.cjs
           python3 - <<'PY'
           import os
           import re
@@ -169,6 +193,12 @@ jobs:
           Path(os.environ['RUNNER_TEMP'], 'agent-workbench-inline.js').write_text(scripts[0])
           PY
           node --check "$RUNNER_TEMP/agent-workbench-inline.js"
+
+      - name: Generate upstream Tauri icons
+        working-directory: activitywatch/aw-tauri
+        run: |
+          npm ci
+          npm run tauri icon "$GITHUB_WORKSPACE/custom-webui/desktop/assets/seeseeyou-icon.png"
 
       - name: Verify source capability separation
         run: |
@@ -207,6 +237,9 @@ jobs:
           workbench = (root / 'src/agent_workbench.rs').read_text()
           runtime = (root / 'src/agent_runtime.rs').read_text()
           assert '.navigate(url)' in workbench
+          assert 'cfg!(target_os = "windows")' in workbench
+          assert 'http://claritide-agent.localhost' in workbench
+          assert 'claritide-agent://localhost' in workbench
           assert 'WebviewWindowBuilder' not in workbench
           assert 'main_navigation_allowed' in lib
           assert 'initialization_script(include_str!("agent_workbench_bridge.js"))' in lib

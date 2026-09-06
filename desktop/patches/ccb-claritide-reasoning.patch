@@ -1,0 +1,45 @@
+diff --git a/src/services/api/openai/requestBody.ts b/src/services/api/openai/requestBody.ts
+index 1604315..ec56cd1 100644
+--- a/src/services/api/openai/requestBody.ts
++++ b/src/services/api/openai/requestBody.ts
+@@ -94,10 +94,19 @@ export function buildOpenAIRequestBody(params: {
+     temperatureOverride,
+     promptCacheKey,
+   } = params
++  // Claritide opts in only after the authorized runtime configuration advertises
++  // support. Other OpenAI-compatible providers retain their existing payloads.
++  const gatewayEffort = process.env.CLAUDE_CODE_EFFORT_LEVEL || ''
++  const reasoningEffort =
++    process.env.CLARITIDE_GATEWAY_REASONING === '1' &&
++    ['low', 'medium', 'high', 'xhigh', 'max'].includes(gatewayEffort)
++      ? (gatewayEffort as ChatCompletionCreateParamsStreaming['reasoning_effort'])
++      : undefined
+   return {
+     model,
+     messages,
+     max_tokens: maxTokens,
++    ...(reasoningEffort && { reasoning_effort: reasoningEffort }),
+     ...(promptCacheKey && { prompt_cache_key: promptCacheKey }),
+     ...(tools.length > 0 && {
+       tools,
+diff --git a/src/utils/context.ts b/src/utils/context.ts
+index 629ab30..e1e2792 100644
+--- a/src/utils/context.ts
++++ b/src/utils/context.ts
+@@ -61,6 +61,16 @@ export function getContextWindowForModel(
+   model: string,
+   betas?: string[],
+ ): number {
++  // Claritide supplies this only for gateways with an advertised text budget.
++  // Keep ordinary providers and the existing compaction algorithm unchanged.
++  const gatewayContext = Number(process.env.CLARITIDE_GATEWAY_CONTEXT_TOKENS)
++  if (
++    Number.isInteger(gatewayContext) &&
++    gatewayContext >= 32_768 &&
++    gatewayContext <= 131_072
++  ) {
++    return gatewayContext
++  }
+   // Allow override via environment variable (ant-only)
+   // This takes precedence over all other context window resolution, including 1M detection,
+   // so users can cap the effective context window for local decisions (auto-compact, etc.)

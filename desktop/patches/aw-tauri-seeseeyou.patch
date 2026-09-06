@@ -4,14 +4,14 @@ index 9f93e2d..c5fde20 100644
 +++ b/src-tauri/Cargo.lock
 @@ -469 +469 @@ name = "aw-tauri"
 -version = "0.1.0"
-+version = "0.2.0"
++version = "0.2.2"
 diff --git a/src-tauri/Cargo.toml b/src-tauri/Cargo.toml
 index d1da14d..6c9b99d 100644
 --- a/src-tauri/Cargo.toml
 +++ b/src-tauri/Cargo.toml
 @@ -3 +3 @@ name = "aw-tauri"
 -version = "0.1.0"
-+version = "0.2.0"
++version = "0.2.2"
 diff --git a/src-tauri/assets/agent-workbench.html b/src-tauri/assets/agent-workbench.html
 new file mode 100644
 index 0000000..d41cf66
@@ -4474,7 +4474,7 @@ index 0000000..1b4f7c6
 +
 +  var TRUSTED_ORIGIN = 'https://watch.sding.me';
 +  var API = TRUSTED_ORIGIN + '/api/v1';
-+  var DESKTOP_VERSION = '0.2.0';
++  var DESKTOP_VERSION = '0.2.2';
 +  var BRIDGE_PROTOCOL = 2;
 +  var TOKEN_KEYS = ['usage_admin_token', 'my_day_session_token'];
 +  var TEAM_KEY = 'my_day_selected_team_id';
@@ -5405,7 +5405,7 @@ index b5b9ab8..9c130ea 100644
 -  "version": "0.1.0",
 -  "identifier": "net.activitywatch.tauri",
 +  "productName": "Claritide",
-+  "version": "0.2.0",
++  "version": "0.2.2",
 +  "identifier": "com.seeseeyou.desktop",
 @@ -9 +9,9 @@
 -      "csp": null

@@ -62,11 +62,17 @@ jobs:
           git -C activitywatch/aw-tauri apply --unidiff-zero \
             "$GITHUB_WORKSPACE/custom-webui/desktop/patches/aw-tauri-seeseeyou.patch"
           git -C activitywatch/aw-tauri apply \
+            "$GITHUB_WORKSPACE/custom-webui/desktop/patches/aw-tauri-agent-nav-entry.patch"
+          git -C activitywatch/aw-tauri apply \
             "$GITHUB_WORKSPACE/custom-webui/desktop/patches/aw-tauri-agent-same-window.patch"
           git -C activitywatch/aw-tauri apply \
             "$GITHUB_WORKSPACE/custom-webui/desktop/patches/aw-tauri-agent-full-access.patch"
           git -C activitywatch/aw-tauri apply \
             "$GITHUB_WORKSPACE/custom-webui/desktop/patches/aw-tauri-agent-bundled-runtime.patch"
+          git -C activitywatch/aw-tauri apply \
+            "$GITHUB_WORKSPACE/custom-webui/desktop/patches/aw-tauri-installer-language.patch"
+          git -C activitywatch/aw-tauri apply \
+            "$GITHUB_WORKSPACE/custom-webui/desktop/patches/aw-tauri-agent-windows-navigation.patch"
           cp custom-webui/desktop/aw-tauri.iss activitywatch/scripts/package/aw-tauri.iss
           cp custom-webui/desktop/inno/ChineseSimplified.isl \
             activitywatch/scripts/package/ChineseSimplified.isl
@@ -101,13 +107,13 @@ jobs:
           grep -F '"seeseeyou-remote"' activitywatch/aw-tauri/src-tauri/tauri.conf.json
           grep -F 'SEESEEYOU_WORKSPACE_URL' activitywatch/aw-tauri/src-tauri/src/lib.rs
           grep -F 'include_str!("seeseeyou_bridge.js")' activitywatch/aw-tauri/src-tauri/src/lib.rs
-          grep -F '"version": "0.2.0"' activitywatch/aw-tauri/src-tauri/tauri.conf.json
+          grep -F '"version": "0.2.2"' activitywatch/aw-tauri/src-tauri/tauri.conf.json
           python - <<'PY'
           from pathlib import Path
 
           lock = Path('activitywatch/aw-tauri/src-tauri/Cargo.lock').read_text(encoding='utf-8')
           packages = lock.split('[[package]]')
-          assert any('name = "aw-tauri"' in package and 'version = "0.2.0"' in package for package in packages)
+          assert any('name = "aw-tauri"' in package and 'version = "0.2.2"' in package for package in packages)
           assert any('name = "android_system_properties"' in package and 'version = "0.1.5"' in package for package in packages)
           PY
 
@@ -123,11 +129,21 @@ jobs:
           cache: npm
           cache-dependency-path: custom-webui/package-lock.json
 
-      - name: Test the injected desktop bridge
+      - name: Run desktop preflight tests
         run: |
           node --check activitywatch/aw-tauri/src-tauri/src/seeseeyou_bridge.js
+          node --check activitywatch/aw-tauri/src-tauri/src/agent_workbench_bridge.js
           SEESEEYOU_BRIDGE_PATH="$GITHUB_WORKSPACE/activitywatch/aw-tauri/src-tauri/src/seeseeyou_bridge.js" \
             node --test custom-webui/desktop/tests/seeseeyou_bridge.test.cjs
+          SEESEEYOU_BRIDGE_PATH="$GITHUB_WORKSPACE/activitywatch/aw-tauri/src-tauri/src/seeseeyou_bridge.js" \
+            node --test custom-webui/desktop/tests/agent_nav_entry.test.cjs
+          CLARITIDE_INSTALLER_SCRIPT="$GITHUB_WORKSPACE/custom-webui/desktop/aw-tauri.iss" \
+            node --test custom-webui/desktop/tests/installer_language.test.cjs
+          CLARITIDE_AGENT_BRIDGE_PATH="$GITHUB_WORKSPACE/activitywatch/aw-tauri/src-tauri/src/agent_workbench_bridge.js" \
+            node --test custom-webui/desktop/tests/agent_workbench_bridge.test.cjs
+          CLARITIDE_AGENT_RUNTIME_PATH="$GITHUB_WORKSPACE/activitywatch/aw-tauri/src-tauri/src/agent_runtime.rs" \
+            CLARITIDE_AGENT_HTML_PATH="$GITHUB_WORKSPACE/activitywatch/aw-tauri/src-tauri/assets/agent-workbench.html" \
+            node --test custom-webui/desktop/tests/agent_workbench_html.test.cjs
 
       - name: Set up Bun for the pinned CCB build
         uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6
@@ -215,11 +231,31 @@ jobs:
           assert 'https://watch.sding.me/*' in remote['remote']['urls']
           assert 'allow-get-sync-status' in remote['permissions']
           assert 'allow-open-external' in remote['permissions']
+          assert 'allow-open-agent-workbench' in remote['permissions']
+          local = capabilities.get('agent-workbench')
+          assert local, 'agent-workbench capability was not compiled'
+          assert local['local'] is True
+          assert local['windows'] == ['main']
+          for permission in (
+              'allow-agent-get-status',
+              'allow-agent-select-workspace',
+              'allow-agent-start',
+              'allow-agent-send',
+              'allow-agent-interrupt',
+              'allow-agent-close',
+              'allow-agent-poll-events',
+          ):
+              assert permission in local['permissions']
 
           manifests = json.loads((schema_dir / 'acl-manifests.json').read_text(encoding='utf-8'))
           app_permissions = manifests['__app-acl__']['permissions']
           assert app_permissions['allow-get-sync-status']['commands']['allow'] == ['get_sync_status']
           assert app_permissions['allow-open-external']['commands']['allow'] == ['open_external']
+          assert app_permissions['allow-open-agent-workbench']['commands']['allow'] == [
+              'open_agent_workbench'
+          ]
+          assert app_permissions['allow-agent-start']['commands']['allow'] == ['agent_start']
+          assert app_permissions['allow-agent-send']['commands']['allow'] == ['agent_send']
           PY
 
       - name: Install packaging dependencies
@@ -269,13 +305,13 @@ jobs:
           bash scripts/package/package-all.sh
           setup_file=$(find dist -maxdepth 1 -name '*-setup.exe' -print -quit)
           zip_file=$(find dist -maxdepth 1 -name '*.zip' -print -quit)
-          mv "$setup_file" dist/Claritide-0.2.0-windows-x86_64-setup.exe
+          mv "$setup_file" dist/Claritide-0.2.2-windows-x86_64-setup.exe
           rm -f "$zip_file"
           portable_stage=$(mktemp -d)
           mkdir -p "$portable_stage/Claritide"
           cp -R dist/activitywatch/. "$portable_stage/Claritide/"
           (cd "$portable_stage" && 7z a -tzip -mx=9 \
-            "$GITHUB_WORKSPACE/activitywatch/dist/Claritide-0.2.0-windows-x86_64-portable.zip" \
+            "$GITHUB_WORKSPACE/activitywatch/dist/Claritide-0.2.2-windows-x86_64-portable.zip" \
             Claritide)
 
       - name: Show generated packages
@@ -285,26 +321,27 @@ jobs:
       - name: Upload Windows packages
         uses: actions/upload-artifact@v7
         with:
-          name: Claritide-0.2.0-Windows
+          name: Claritide-0.2.2-Windows
           if-no-files-found: error
           retention-days: 14
           path: |
-            activitywatch/dist/Claritide-0.2.0-windows-x86_64-setup.exe
-            activitywatch/dist/Claritide-0.2.0-windows-x86_64-portable.zip
+            activitywatch/dist/Claritide-0.2.2-windows-x86_64-setup.exe
+            activitywatch/dist/Claritide-0.2.2-windows-x86_64-portable.zip
 
-      - name: Publish the Claritide v0.2.0 release
+      - name: Publish the Claritide v0.2.2 release
+        if: github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          setup_file=activitywatch/dist/Claritide-0.2.0-windows-x86_64-setup.exe
-          portable_file=activitywatch/dist/Claritide-0.2.0-windows-x86_64-portable.zip
-          if gh release view v0.2.0 --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            gh release upload v0.2.0 "$setup_file" "$portable_file" \
+          setup_file=activitywatch/dist/Claritide-0.2.2-windows-x86_64-setup.exe
+          portable_file=activitywatch/dist/Claritide-0.2.2-windows-x86_64-portable.zip
+          if gh release view v0.2.2 --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload v0.2.2 "$setup_file" "$portable_file" \
               --repo "$GITHUB_REPOSITORY" --clobber
           else
-            gh release create v0.2.0 "$setup_file" "$portable_file" \
+            gh release create v0.2.2 "$setup_file" "$portable_file" \
               --repo "$GITHUB_REPOSITORY" \
               --target "$GITHUB_SHA" \
-              --title "Claritide 0.2.0" \
+              --title "Claritide 0.2.2" \
               --notes "完整 My Day 工作台、Google 登录、5600 本机采集、真实同步状态与安全账号/团队重新绑定。 Full My Day workspace, Google sign-in, local collection on port 5600, real sync health, and safe account/team rebinding."
           fi

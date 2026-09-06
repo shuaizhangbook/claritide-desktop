@@ -16,6 +16,27 @@ function response(body, status = 200) {
   };
 }
 
+function aiRuntimeFetch(url) {
+  if (url.includes('/me/ai/runtime-config')) {
+    return response({
+      enabled: true,
+      gateway_url: 'https://watch.sding.me/api/v1/agent-ai/openai/v1',
+      default_model: 'gpt-5.6-sol',
+      allowed_models: ['gpt-5.6-sol'],
+    });
+  }
+  if (url.endsWith('/me/ai/runtime-token')) {
+    return response({
+      token: 'art_bridge_test_token',
+      expires_in: 900,
+      default_model: 'gpt-5.6-sol',
+      allowed_models: ['gpt-5.6-sol'],
+      session_id: 'ars_bridge_test_session',
+    });
+  }
+  throw new Error(`Unexpected URL: ${url}`);
+}
+
 function loadBridge({
   initialStorage = {},
   invoke,
@@ -43,7 +64,7 @@ function loadBridge({
     const value = await invoke(command, args);
     if (command === 'get_sync_status' && value && typeof value === 'object') {
       return {
-        desktop_version: '0.2.0',
+        desktop_version: '0.2.2',
         bridge_protocol: 2,
         ...value,
       };
@@ -107,17 +128,96 @@ test('Claritide branding and platform detection cover all desktop packages', () 
 test('remote workspace receives only the isolated agent-window opener', async () => {
   const calls = [];
   const harness = loadBridge({
-    invoke: async (command, args) => { calls.push([command, args]); },
-    fetch: async () => response({}),
+    initialStorage: { my_day_session_token: 'signed-in-test-token' },
+    invoke: async (command, args) => {
+      calls.push([command, args]);
+      if (command === 'get_or_create_installation_id') return 'desktop-test-installation';
+      return null;
+    },
+    fetch: async (url) => aiRuntimeFetch(url),
   });
   assert.deepEqual(Object.keys(harness.agentDesktop), ['capabilityVersion', 'openWorkbench']);
   assert.equal(harness.agentDesktop.capabilityVersion, 1);
   await harness.agentDesktop.openWorkbench();
-  assert.equal(calls.length, 1);
-  assert.equal(calls[0][0], 'open_agent_workbench');
-  assert.equal(calls[0][1].locale, 'zh-CN');
+  assert.deepEqual(calls.map(([command]) => command), [
+    'get_or_create_installation_id',
+    'open_agent_workbench',
+  ]);
+  assert.equal(calls[1][1].locale, 'zh-CN');
+  assert.equal(calls[1][1].runtime.token, 'art_bridge_test_token');
+  assert.deepEqual(
+    JSON.parse(JSON.stringify(calls[1][1].runtime.allowedModels)),
+    ['gpt-5.6-sol'],
+  );
   assert.equal(harness.agentDesktop.startSession, undefined);
   assert.equal(harness.agentDesktop.selectWorkspace, undefined);
+});
+
+test('AI Workbench activates an unauthorized desktop installation and retries once', async () => {
+  const invokeCalls = [];
+  const fetchCalls = [];
+  let runtimeConfigReads = 0;
+  const harness = loadBridge({
+    initialStorage: {
+      my_day_session_token: 'signed-in-test-token',
+      my_day_selected_team_id: 'team-a',
+    },
+    invoke: async (command, args) => {
+      invokeCalls.push([command, args]);
+      if (command === 'get_or_create_installation_id') return 'desktop-installation-a';
+      if (command === 'get_sync_status') return { configured: false, paused: true };
+      return null;
+    },
+    fetch: async (url, options = {}) => {
+      fetchCalls.push([url, options]);
+      if (url.includes('/me/ai/runtime-config')) {
+        runtimeConfigReads += 1;
+        if (runtimeConfigReads === 1) {
+          return response({
+            detail: {
+              code: 'runtime_device_not_authorized',
+              message: 'This desktop installation is not active for the signed-in user.',
+            },
+          }, 403);
+        }
+        return aiRuntimeFetch(url);
+      }
+      if (url.endsWith('/me/teams')) {
+        return response({
+          employee_id: 'employee-a',
+          items: [{ team_id: 'team-a', name: 'Team A' }],
+        });
+      }
+      if (url.endsWith('/devices/auto-enroll')) {
+        return response({
+          device: { device_id: 'device-a', employee_id: 'employee-a', team_id: 'team-a' },
+          credentials: { device_token: 'device-token-a', hmac_secret: 'hmac-a' },
+        }, 201);
+      }
+      return aiRuntimeFetch(url);
+    },
+  });
+
+  await harness.agentDesktop.openWorkbench();
+
+  assert.equal(runtimeConfigReads, 2);
+  const enrollment = fetchCalls.find(([url]) => url.endsWith('/devices/auto-enroll'));
+  assert.ok(enrollment);
+  assert.equal(enrollment[1].headers.get('X-Team-ID'), 'team-a');
+  assert.deepEqual(JSON.parse(enrollment[1].body), {
+    installation_id: 'desktop-installation-a',
+    device_name: 'Claritide Windows',
+    platform: 'Windows',
+  });
+  const commands = invokeCalls.map(([command]) => command);
+  assert.ok(commands.indexOf('configure_sync') < commands.indexOf('open_agent_workbench'));
+  const configure = invokeCalls.find(([command]) => command === 'configure_sync');
+  assert.equal(configure[1].config.device_id, 'device-a');
+  assert.equal(configure[1].config.device_key, 'device-token-a');
+  assert.equal(
+    invokeCalls.find(([command]) => command === 'open_agent_workbench')[1].runtime.token,
+    'art_bridge_test_token',
+  );
 });
 
 test('installer language is applied once without overriding later manual changes', () => {
@@ -147,12 +247,17 @@ test('English workspace opens the AI Workbench in English', async () => {
   const calls = [];
   const harness = loadBridge({
     documentLanguage: 'en',
-    invoke: async (command, args) => { calls.push([command, args]); },
-    fetch: async () => response({}),
+    initialStorage: { my_day_session_token: 'signed-in-test-token' },
+    invoke: async (command, args) => {
+      calls.push([command, args]);
+      if (command === 'get_or_create_installation_id') return 'desktop-test-installation';
+      return null;
+    },
+    fetch: async (url) => aiRuntimeFetch(url),
   });
   await harness.agentDesktop.openWorkbench();
-  assert.equal(calls[0][0], 'open_agent_workbench');
-  assert.equal(calls[0][1].locale, 'en');
+  assert.equal(calls[1][0], 'open_agent_workbench');
+  assert.equal(calls[1][1].locale, 'en');
 });
 
 test('cold logged-out startup clears an existing native identity', async () => {
@@ -355,7 +460,7 @@ test('recent server activity overrides a stale native worker error', async () =>
       calls.push(command);
       if (command === 'get_sync_status') {
         return {
-          desktop_version: '0.2.0',
+          desktop_version: '0.2.2',
           bridge_protocol: 2,
           configured: true,
           paused: false,

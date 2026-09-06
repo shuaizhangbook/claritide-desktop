@@ -16,3 +16,7 @@ test('Windows installer persists the selected app language', () => {
   assert.match(installer, /claritide-installer-language\.txt/);
   assert.match(installer, /SaveStringToFile/);
 });
+
+test('Windows installer embeds the target desktop version', () => {
+  assert.match(installer, /^#define MyAppVersion "0\.2\.2"\r?$/m);
+});

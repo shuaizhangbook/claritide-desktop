@@ -5,7 +5,7 @@
 ; and display name.
 
 #define MyAppName "Claritide"
-#define MyAppVersion "0.2.0"
+#define MyAppVersion "0.2.2"
 #define MyAppPublisher "Claritide"
 #define MyAppURL "https://watch.sding.me/"
 #define MyAppExeName "aw-tauri.exe"
