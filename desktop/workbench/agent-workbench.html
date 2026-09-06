@@ -113,6 +113,10 @@
     .history-notice span { flex: 1 1 180px; }
     .session-row.is-running .session-title::before { content: '● '; color: #437456; }
     .project { margin-bottom: 4px; }
+    .item-shell.project-shell { grid-template-columns: 30px minmax(0, 1fr) 30px; }
+    .project-toggle { width: 28px; height: 32px; margin-left: 2px; }
+    .project-toggle .icon { transition: transform .15s; }
+    .project-toggle[aria-expanded="true"] .icon { transform: rotate(90deg); }
     .item-shell {
       position: relative;
       display: grid;
@@ -302,6 +306,7 @@
     .activity-head small { color: var(--dim); }
     .activity-head button { margin-left: auto; }
     .activity-body { min-height: 0; overflow: auto; }
+    .activity-scope { width: calc(100% - 26px); margin: 12px 13px; padding: 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); font-size: 12px; }
     .activity-empty { padding: 28px 18px; color: var(--muted); font-size: 12px; line-height: 1.65; }
     .log-item { padding: 11px 13px; border-bottom: 1px solid var(--line); }
     .log-item strong { display: block; margin-bottom: 4px; font-size: 11px; }
@@ -676,11 +681,12 @@
 
       <aside class="activity" id="activityPanel" hidden>
         <div class="activity-head">
-          <strong data-i18n="运行详情">运行详情</strong>
+          <strong id="activityTitle">本次任务详情</strong>
           <small id="eventCount">0 条</small>
           <button class="text-button" id="closeActivity" type="button" data-i18n="关闭">关闭</button>
         </div>
         <div class="activity-body">
+          <select id="activityScope" class="activity-scope" aria-label="选择任务记录"></select>
           <div class="activity-empty" id="eventEmpty" data-i18n="CCB 的读取、分析、工具调用和完成状态会显示在这里。">CCB 的读取、分析、工具调用和完成状态会显示在这里。</div>
           <div id="eventLog"></div>
         </div>
@@ -1144,7 +1150,7 @@
       state.pendingApprovals = {};
       state.bufferedEvents = [];
       state.closingPromise = Promise.resolve();
-      var ui = { narrow: false, sidebarOpen: true, modalId: '', modalOpener: null };
+      var ui = { narrow: false, sidebarOpen: true, modalId: '', modalOpener: null, expandedProjects: Object.create(null), activitySelection: null };
 
       var $ = function (selector, root) { return (root || document).querySelector(selector); };
       var $$ = function (selector, root) { return Array.prototype.slice.call((root || document).querySelectorAll(selector)); };
@@ -1155,7 +1161,11 @@
         svg.setAttribute('class', 'icon');
         svg.setAttribute('viewBox', '0 0 24 24');
         svg.setAttribute('aria-hidden', 'true');
-        if (name === 'folder') {
+        if (name === 'chevron-right') {
+          var chevron = document.createElementNS(namespace, 'path');
+          chevron.setAttribute('d', 'm9 6 6 6-6 6');
+          svg.appendChild(chevron);
+        } else if (name === 'folder') {
           var folder = document.createElementNS(namespace, 'path');
           folder.setAttribute('d', 'M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z');
           svg.appendChild(folder);
@@ -1422,6 +1432,7 @@
       }
 
       function resetAccountMemory() {
+        ui.expandedProjects = Object.create(null); ui.activitySelection = null;
         clearTimeout(state.draftSaveTimer); state.draftSaveTimer = null;
         if (recognition) { try { recognition.abort(); } catch (_) {} recognition = null; }
         state.projects = []; state.activeProjectId = ''; state.activeSessionId = '';
@@ -1745,7 +1756,27 @@
           var section = document.createElement('section');
           section.className = 'project';
           var shell = document.createElement('div');
-          shell.className = 'item-shell' + (project.id === state.activeProjectId ? ' active' : '');
+          shell.className = 'item-shell project-shell' + (project.id === state.activeProjectId ? ' active' : '');
+          var expanded = Object.prototype.hasOwnProperty.call(ui.expandedProjects, project.id) ? ui.expandedProjects[project.id] : project.id === state.activeProjectId;
+          // Search temporarily reveals matches without overwriting the user's choice.
+          var revealed = Boolean(query.trim()) || expanded;
+          var listId = 'project-sessions-' + project.id;
+          var toggle = document.createElement('button');
+          toggle.type = 'button'; toggle.className = 'compact-action project-toggle';
+          toggle.setAttribute('aria-expanded', String(revealed));
+          toggle.setAttribute('aria-controls', listId);
+          toggle.title = (revealed ? (english ? 'Collapse ' : '折叠 ') : (english ? 'Expand ' : '展开 ')) + project.name;
+          toggle.setAttribute('aria-label', toggle.title);
+          toggle.disabled = Boolean(query.trim());
+          toggle.appendChild(createLucideIcon('chevron-right'));
+          toggle.addEventListener('click', function () {
+            ui.expandedProjects[project.id] = !expanded;
+            renderProjects();
+            var replacement = document.getElementById(listId);
+            var button = replacement && replacement.parentNode.querySelector('.project-toggle');
+            if (button) button.focus();
+          });
+          shell.appendChild(toggle);
           var row = document.createElement('button');
           row.className = 'project-row';
           row.type = 'button';
@@ -1759,9 +1790,10 @@
           shell.appendChild(row);
           shell.appendChild(actionMenu('project', project.id));
           section.appendChild(shell);
-          if (project.id === state.activeProjectId || query.trim()) {
+          {
             var list = document.createElement('div');
             list.className = 'session-list';
+            list.id = listId; list.hidden = !revealed;
             entry.sessions.forEach(function (session) {
               var sessionShell = document.createElement('div');
               sessionShell.className = 'item-shell session-shell' + (session.id === state.activeSessionId ? ' active' : '');
@@ -2078,7 +2110,7 @@
         var details = document.createElement('button');
         details.type = 'button';
         details.textContent = tr('查看详情');
-        details.addEventListener('click', openActivity);
+        bindActivityDetails(details);
         row.appendChild(pulse);
         row.appendChild(copy);
         row.appendChild(details);
@@ -2120,7 +2152,7 @@
         details.type = 'button';
         details.className = 'card-button';
         details.textContent = tr('查看详情');
-        details.addEventListener('click', openActivity);
+        bindActivityDetails(details);
         actions.appendChild(details);
         card.appendChild(title);
         card.appendChild(copy);
@@ -2201,7 +2233,7 @@
         details.type = 'button';
         details.className = 'card-button';
         details.textContent = tr('查看详情');
-        details.addEventListener('click', openActivity);
+        bindActivityDetails(details);
         actions.appendChild(retry);
         if (state.attemptingResume) {
           var recover = document.createElement('button');
@@ -2406,7 +2438,10 @@
       function recordEvent(kind, payload, timestamp, targetSession) {
         var session = targetSession || activeSession();
         if (!session) return;
-        session.events.push({ kind: kind, payload: payload || {}, time: timestamp || Date.now() });
+        var runs = session.taskRuns || [];
+        var run = runs[runs.length - 1];
+        session.events.push({ kind: kind, payload: payload || {}, time: timestamp || Date.now(), runId: run ? run.id : null });
+        if (session.events.length > 80) session.eventsTruncated = true;
         session.events = session.events.slice(-80);
         save();
         if (session === activeSession()) renderActivity();
@@ -2475,16 +2510,67 @@
         card.id = 'taskSummary'; $('#conversationInner').appendChild(card);
       }
 
+      function activityEvents(session, runId) {
+        var events = session && session.events || [];
+        if (runId === 'all') return events;
+        var runs = session && session.taskRuns || [];
+        var legacyRunId = null;
+        return events.filter(function (event) {
+          if (event.kind === 'task_started') {
+            // Old clients stored no run ID. Only use an unambiguous start marker;
+            // undated or truncated legacy groups remain in the explicit history view.
+            var candidates = runs.filter(function (run) {
+              return run.startedAt > 0 && run.startedAt <= event.time && (!run.endedAt || event.time <= run.endedAt);
+            });
+            legacyRunId = event.runId || (candidates.length === 1 ? candidates[0].id : null);
+          }
+          var owner = event.runId === undefined ? legacyRunId : event.runId;
+          if (event.kind === 'turn_completed' || event.kind === 'error' && event.payload && event.payload.terminal || event.kind === 'stopped' && !(event.payload && event.payload.settling)) legacyRunId = null;
+          return Boolean(runId) && owner === runId;
+        });
+      }
+
       function renderActivity() {
         var session = activeSession();
-        var events = session ? session.events || [] : [];
+        var runs = session && session.taskRuns || [];
+        if (!ui.activitySelection || ui.activitySelection.session !== session) {
+          ui.activitySelection = { session: session, runId: runs.length ? runs[runs.length - 1].id : '' };
+        }
+        var runId = ui.activitySelection.runId;
+        var all = runId === 'all';
+        var selectedRuns = all ? runs.slice().reverse() : runs.filter(function (run) { return run.id === runId; });
+        var events = activityEvents(session, runId);
+        $('#activityTitle').textContent = all ? (english ? 'Chat activity' : '本对话全部记录') : (english ? 'Task details' : '本次任务详情');
+        var scope = $('#activityScope'); scope.textContent = '';
+        scope.setAttribute('aria-label', english ? 'Choose task records' : '选择任务记录');
+        runs.slice().reverse().forEach(function (run, index) {
+          var option = document.createElement('option'); option.value = run.id;
+          option.textContent = (index === 0 ? (english ? 'Latest task' : '最近任务') : formatTime(run.startedAt)) + ' · ' + run.goal.slice(0, 40);
+          scope.appendChild(option);
+        });
+        if (!selectedRuns.length && !all) {
+          var missing = document.createElement('option'); missing.value = runId;
+          missing.textContent = english ? 'Task records unavailable' : '暂无本次任务记录'; scope.appendChild(missing);
+        }
+        var history = document.createElement('option'); history.value = 'all';
+        history.textContent = english ? 'All records in this chat' : '本对话全部记录'; scope.appendChild(history);
+        scope.value = runId;
         var host = $('#eventLog');
         host.textContent = '';
-        if (session && session.taskRunsTruncated) {
+        if (all && session && session.taskRunsTruncated) {
           var retained = document.createElement('p'); retained.className = 'activity-empty'; retained.textContent = english ? 'Showing the 12 most recent task summaries. Saved conversation messages are retained.' : '显示最近 12 次任务摘要，已保存的对话正文仍然保留。'; host.appendChild(retained);
         }
-        (session && session.taskRuns || []).slice().reverse().forEach(function (run) { host.appendChild(taskSummaryCard(run, false)); });
-        $('#eventEmpty').hidden = events.length > 0;
+        selectedRuns.forEach(function (run) { host.appendChild(taskSummaryCard(run, false)); });
+        if (session && (session.eventsTruncated || (session.events || []).length >= 80)) {
+          var limited = document.createElement('p'); limited.className = 'activity-empty';
+          limited.textContent = english ? 'Only recent event records are retained; earlier steps may be missing.' : '仅保留最近的事件记录，较早步骤可能未包含在内。'; host.appendChild(limited);
+        }
+        if (!all && session && (session.events || []).some(function (event) { return event.runId === undefined; })) {
+          var legacy = document.createElement('p'); legacy.className = 'activity-empty';
+          legacy.textContent = english ? 'Older records without a confirmed task are available under All records in this chat.' : '无法确认所属任务的旧版记录，可在「本对话全部记录」中查看。'; host.appendChild(legacy);
+        }
+        $('#eventEmpty').hidden = events.length > 0 || selectedRuns.length > 0;
+        $('#eventEmpty').textContent = english ? 'No records for this task.' : '暂无本次任务记录。';
         events.forEach(function (event) {
           var item = document.createElement('div');
           item.className = 'log-item';
@@ -2503,10 +2589,23 @@
         $('#eventCount').textContent = events.length + ' ' + tr('条');
       }
 
-      function openActivity() {
+      function bindActivityDetails(button) {
+        var session = activeSession(); var epoch = state.storageEpoch;
+        var runs = session && session.taskRuns || [];
+        var runId = runs.length ? runs[runs.length - 1].id : '';
+        button.addEventListener('click', function () {
+          if (epoch !== state.storageEpoch || session !== activeSession()) return;
+          openActivity(runId);
+        });
+      }
+
+      function openActivity(runId) {
+        var session = activeSession(); var runs = session && session.taskRuns || [];
+        ui.activitySelection = { session: session, runId: typeof runId === 'string' ? runId : runs.length ? runs[runs.length - 1].id : '' };
         $('#activityPanel').hidden = false;
         $('#headerMenu').removeAttribute('open');
         renderActivity();
+        $('.activity-body').scrollTop = 0;
       }
 
       function diagnosticsText(status) {
@@ -2838,6 +2937,7 @@
         rememberDraft(true);
         if (!runningSession()) void closeNativeSession();
         state.activeProjectId = projectId;
+        ui.expandedProjects[projectId] = true;
         state.activeSessionId = '';
         restoreDraft();
         persistComposerState();
@@ -2856,6 +2956,7 @@
         rememberDraft(true);
         if (!runningSession()) void closeNativeSession();
         state.activeProjectId = projectId;
+        ui.expandedProjects[projectId] = true;
         state.activeSessionId = sessionId;
         restoreDraft();
         persistComposerState();
@@ -3440,6 +3541,8 @@
         state.bufferedEvents = [];
         session.lastError = null;
         session.lastResult = null;
+        var taskRun = ClaritideTaskRuns.start(session, uid('run'), value, Date.now());
+        ui.activitySelection = { session: session, runId: taskRun.id };
         renderConversation();
         scrollConversation(true);
         syncControls();
@@ -3466,7 +3569,6 @@
           state.turnActive = true;
           session.nativeHistoryInitialized = true;
           delete session.textContinuation;
-          ClaritideTaskRuns.start(session, uid('run'), value, Date.now());
           save();
           renderTaskSummary();
           appendRunIndicator('正在处理任务');
@@ -3485,6 +3587,7 @@
           state.bufferedEvents = [];
           removeRunIndicator();
           var message = safeText(error && error.message || error);
+          ClaritideTaskRuns.update(session, 'error', { terminal: true }, Date.now());
           session.lastError = { code: state.nativeSessionId ? 'send_failed' : 'start_failed', message: message, time: Date.now() };
           session.lastFailedRequest = session.lastRequest;
           rememberDraft(true);
@@ -3712,6 +3815,10 @@
           if (ui.narrow && !state.starting && !state.pendingSend && event.target.closest('.project-row, .session-row')) setSidebarOpen(false, true);
         });
         $('#historySearch').addEventListener('input', renderProjects);
+        $('#activityScope').addEventListener('change', function () {
+          ui.activitySelection = { session: activeSession(), runId: this.value };
+          renderActivity(); $('.activity-body').scrollTop = 0;
+        });
         $('#returnRunningSession').addEventListener('click', returnToRunningSession);
         $('#continueViewedSession').addEventListener('click', function () { void continueViewedSession(); });
         $('#newProject').addEventListener('click', openProjectModal);

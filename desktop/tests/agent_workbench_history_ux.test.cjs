@@ -12,12 +12,13 @@ const plain = value => JSON.parse(JSON.stringify(value));
 function harness(options = {}) {
   const nodes = new Map(), calls = [], drawn = [], toasts = [], approvals = [];
   function node() {
-    return { value: '', _text: '', hidden: false, disabled: false, style: {}, children: [], listeners: {},
+    return { value: '', _text: '', hidden: false, disabled: false, style: {}, children: [], listeners: {}, attributes: {},
       get textContent() { return this._text; },
       set textContent(value) { this._text = value; this.children.forEach(child => { child.parentNode = null; }); this.children = []; },
       classList: { add() {}, remove() {}, toggle() {} },
       appendChild(child) { child.parentNode = this; this.children.push(child); return child; },
-      addEventListener(kind, callback) { this.listeners[kind] = callback; }, setAttribute() {}, removeAttribute() {}, focus() {},
+      addEventListener(kind, callback) { this.listeners[kind] = callback; },
+      setAttribute(key, value) { this.attributes[key] = String(value); }, getAttribute(key) { return this.attributes[key]; }, removeAttribute(key) { delete this.attributes[key]; }, focus() {},
       remove() { if (this.parentNode) this.parentNode.children = this.parentNode.children.filter(child => child !== this); this.parentNode = null; },
       querySelectorAll(selector) {
         const matches = child => selector[0] === '#' ? child.id === selector.slice(1) : String(child.className || '').split(/\s+/).includes(selector.slice(1));
@@ -32,7 +33,7 @@ function harness(options = {}) {
     querySelector(selector) {
       if (selector === '#conversationInner .message.agent:last-of-type .message-body') return streamingBody;
       if (!nodes.has(selector)) nodes.set(selector, node()); return nodes.get(selector);
-    }, querySelectorAll() { return []; }, createElement: node,
+    }, querySelectorAll() { return []; }, createElement: node, createElementNS: node,
     getElementById(id) { for (const item of nodes.values()) { const found = item.querySelector('#' + id); if (found) return found; } return null; },
   };
   const storage = new Map();
@@ -58,7 +59,8 @@ function harness(options = {}) {
     },
   };
   vm.runInNewContext(script.replace('void init();', `
-    renderProjects = renderAttachments = renderActivity = scrollConversation = removeRunIndicator = function () {};
+    ${options.realUI ? '' : 'renderProjects = renderActivity = function () {};'}
+    renderAttachments = scrollConversation = removeRunIndicator = function () {};
     appendRunIndicator = updateRunIndicator = function (text) { drawn.push({ indicator: text }); };
     appendMessage = drawMessage;
     renderAnswer = function (body, text) { body._streaming = false; body.textContent = text; drawn.push({ final: text }); };
@@ -67,7 +69,9 @@ function harness(options = {}) {
     ${options.realApproval ? '' : 'renderApproval = function (approval) { approvals.push(approval.requestId); };'}
     showToast = function (text) { toasts.push(text); };
     window.testApi = { state, activeSession, send, stop, selectProject, selectSession, continueViewedSession, returnToRunningSession,
-      handleEvent, runningSession, browsingHistory, historyProjects, syncControls, renderConversation, resetRunningView };
+      handleEvent, runningSession, browsingHistory, historyProjects, syncControls, renderConversation, resetRunningView,
+      renderProjects, renderActivity, openActivity, recordEvent, resetAccountMemory, taskRuns: ClaritideTaskRuns,
+      ${options.realUI ? 'bindActivityDetails, activityEvents,' : ''} };
   `), context);
   const api = context.window.testApi;
   const session = (id, time) => ({ id, name: id, model: 'gpt-test', effort: 'high', permission: 'controlled', messages: [], events: [], updatedAt: time });
@@ -101,6 +105,101 @@ test('background output and activity stay with the running chat while other hist
   h.selectSession('project-a', 'chat-b'); h.drawn.length = 0;
   h.handleEvent({ sessionId: 'native-a', type: 'assistant_final', payload: { text: 'Final answer' } });
   assert.equal(h.a.messages.at(-1).text, 'Final answer'); assert.equal(h.b.messages.length, 0); assert.equal(h.drawn.length, 0);
+});
+
+test('folder toggles expand independently without switching or stopping the running chat', () => {
+  const h = harness({ realUI: true }); h.running(); h.renderProjects();
+  const projects = () => h.element('#projectList').children;
+  const toggle = index => projects()[index].querySelector('.project-toggle');
+  const list = index => projects()[index].querySelector('.session-list');
+  assert.equal(toggle(0).getAttribute('aria-expanded'), 'true');
+  toggle(0).listeners.click();
+  assert.equal(list(0).hidden, true);
+  toggle(1).listeners.click();
+  assert.equal(list(1).hidden, false); assert.equal(list(0).hidden, true);
+  assert.equal(h.state.activeSessionId, 'chat-a'); assert.equal(h.state.turnActive, true);
+  assert.deepEqual(h.calls, []);
+  h.renderProjects(); assert.equal(list(0).hidden, true, 'stream rerenders retain the fold');
+  h.element('#historySearch').value = 'alpha'; h.renderProjects();
+  assert.equal(list(0).hidden, false); assert.equal(toggle(0).disabled, true);
+  h.element('#historySearch').value = ''; h.renderProjects(); assert.equal(list(0).hidden, true);
+});
+
+test('details default to the latest task and count only its events; chat history is explicit', () => {
+  const h = harness({ realUI: true });
+  h.taskRuns.start(h.a, 'run-old', 'Old request', 100);
+  h.recordEvent('task_started', { message: 'Old request' }, 100);
+  h.recordEvent('tool_started', { tool: 'Old tool' }, 101);
+  h.taskRuns.update(h.a, 'turn_completed', {}, 110);
+  h.taskRuns.start(h.a, 'run-new', 'New request', 200);
+  h.recordEvent('task_started', { message: 'New request' }, 200);
+  h.recordEvent('tool_started', { tool: 'New tool' }, 201);
+  h.openActivity();
+  assert.equal(h.element('#eventCount').textContent, '2 items');
+  assert.equal(h.element('#eventLog').querySelectorAll('.task-summary').length, 1);
+  assert.equal(h.element('#eventLog').querySelector('.task-goal').textContent, 'New request');
+  assert.deepEqual(Array.from(h.activityEvents(h.a, 'run-new'), e => e.payload.tool || e.payload.message), ['New request', 'New tool']);
+  h.openActivity('all');
+  assert.equal(h.element('#eventCount').textContent, '4 items');
+  assert.equal(h.element('#eventLog').querySelectorAll('.task-summary').length, 2);
+});
+
+test('a details button remains bound to its own run and cannot open records after switching owner', () => {
+  const h = harness({ realUI: true });
+  h.taskRuns.start(h.a, 'run-old', 'Old request', 100);
+  const button = h.element('#testDetails'); h.bindActivityDetails(button);
+  h.taskRuns.update(h.a, 'turn_completed', {}, 110);
+  h.taskRuns.start(h.a, 'run-new', 'New request', 200);
+  button.listeners.click();
+  assert.equal(h.element('#eventLog').querySelector('.task-goal').textContent, 'Old request');
+  h.state.activeSessionId = h.b.id; h.renderActivity();
+  button.listeners.click(); assert.equal(h.element('#eventLog').querySelectorAll('.task-summary').length, 0);
+  h.state.activeSessionId = h.a.id; h.state.storageEpoch += 1; h.openActivity('run-new');
+  button.listeners.click(); assert.equal(h.element('#activityScope').value, 'run-new');
+});
+
+test('legacy events use confirmed start boundaries and never guess orphaned or ambiguous records', () => {
+  const h = harness({ realUI: true });
+  const old = h.taskRuns.start(h.a, 'old', 'Same request', 100); old.status = 'finished'; old.endedAt = 150;
+  const current = h.taskRuns.start(h.a, 'current', 'Same request', 200);
+  const event = (kind, time, payload = {}) => ({ kind, time, payload });
+  h.a.events = [event('tool_completed', 90), event('task_started', 100), event('tool_started', 101),
+    event('turn_completed', 150), event('session_started', 190), event('task_started', 200), event('tool_started', 201)];
+  assert.deepEqual(Array.from(h.activityEvents(h.a, 'current'), e => e.time), [200, 201]);
+  assert.deepEqual(Array.from(h.activityEvents(h.a, 'old'), e => e.time), [100, 101, 150]);
+  h.a.events = h.a.events.slice(-1);
+  assert.equal(h.activityEvents(h.a, 'current').length, 0, 'missing start markers do not leak old events');
+  assert.equal(h.activityEvents(h.a, 'all').length, 1);
+  old.endedAt = current.startedAt; h.a.events = [event('task_started', 200), event('tool_started', 201)];
+  assert.equal(h.activityEvents(h.a, 'current').length, 0, 'same timestamp boundaries are ambiguous');
+});
+
+test('events retain run ownership through storage and timestamp skew, including background completion', () => {
+  const h = harness({ realUI: true }); h.running();
+  h.taskRuns.start(h.a, 'old', 'Old', 100); h.taskRuns.update(h.a, 'turn_completed', {}, 110);
+  h.taskRuns.start(h.a, 'current', 'Current', 200);
+  h.state.activeSessionId = h.b.id;
+  h.handleEvent({ sessionId: 'native-a', type: 'tool_started', timestampMs: 90, payload: { toolUseId: 'read', tool: 'Read' } });
+  h.handleEvent({ sessionId: 'native-a', type: 'turn_completed', timestampMs: 95, payload: {} });
+  assert.equal(h.b.events.length, 0);
+  const saved = plain(h.a); saved.taskRuns = h.taskRuns.restore(saved.taskRuns);
+  assert.deepEqual(Array.from(h.activityEvents(saved, 'current'), e => e.kind), ['tool_started', 'turn_completed']);
+  assert.equal(h.activityEvents(saved, 'old').length, 0);
+});
+
+test('a rejected retry gets its own failed run and cannot inherit the previous task details', async () => {
+  const h = harness({ realUI: true, send: async () => { throw new Error('Send rejected'); } });
+  h.taskRuns.start(h.a, 'previous', 'Previous successful task', 100);
+  h.taskRuns.update(h.a, 'turn_completed', {}, 110);
+  h.recordEvent('turn_completed', {}, 110);
+  h.prompt.value = 'Retry this request'; await h.send();
+  assert.equal(h.a.taskRuns.length, 2); assert.equal(h.a.taskRuns.at(-1).status, 'failed');
+  assert.equal(h.a.taskRuns.at(-1).goal, 'Retry this request');
+  h.openActivity();
+  assert.equal(h.element('#eventLog').querySelector('.task-goal').textContent, 'Retry this request');
+  assert.equal(h.element('#eventCount').textContent, '1 items');
+  assert.equal(h.a.events.at(-1).runId, h.a.taskRuns.at(-1).id);
+  assert.equal(h.a.messages.length, 0); assert.equal(h.prompt.value, 'Retry this request');
 });
 
 test('background approvals stay visible in the return badge and reappear in their own chat', () => {
