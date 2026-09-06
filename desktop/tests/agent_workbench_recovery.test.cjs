@@ -35,6 +35,7 @@ function harness(overrides = {}, locale = 'en') {
     getElementById(id) { for (const root of roots.values()) { const found = find(root, node => node.id === id); if (found) return found; } return null; },
   };
   const bridge = {
+    async restoreWorkspace() { return null; },
     async selectWorkspace() { calls.push(['select']); return { id: 'selected', path: '/original' }; },
     async listSessions() { return native; },
     async startSession(request) {
@@ -58,7 +59,7 @@ function harness(overrides = {}, locale = 'en') {
     recordEvent = function () {};
     browsingHistory = function () { return Boolean(state.testHistoryView); };
     appendMessage = function (role, text, time, persist, attachments) { if (persist) activeSession().messages.push({role, text, time, attachments}); return {textContent:text}; };
-    window.testApi = { state, fillModels, setModel, chooseRecoveryModel, unavailableSelectedModel, runtimeContentForSession, ensureNativeSession, chooseRecoveryWorkspace, appendErrorCard, appendHistoryRecoveryCard, send, sameWorkspacePath };
+    window.testApi = { state, fillModels, setModel, chooseRecoveryModel, unavailableSelectedModel, runtimeContentForSession, ensureNativeSession, chooseRecoveryWorkspace, appendErrorCard, appendHistoryRecoveryCard, send, sameWorkspacePath, memoryAccountSnapshot };
   `;
   vm.runInNewContext(script.replace('void init();', bootstrap), context);
   const api = context.window.testApi;
@@ -108,6 +109,137 @@ test('a genuinely removed model blocks startup and offers an explicit replacemen
   h.setModel('gpt-new');
   await h.send();
   assert.equal(h.calls.find(call => call[0] === 'start')[1].model, 'gpt-new');
+});
+
+for (const reload of ['same-account sign-in', 'workbench reload']) {
+  test(reload + ' restores the saved project folder without opening the picker', async () => {
+    const restoredPaths = [];
+    const h = harness({
+      async restoreWorkspace(request) {
+        restoredPaths.push(request.path);
+        return { id: 'fresh-native-grant', path: '/original' };
+      },
+      async selectWorkspace() { throw new Error('The approved folder must not require a picker'); },
+    });
+    h.session.runtimeSessionId = randomUUID();
+    h.project.nativeWorkspace = { id: 'old-ephemeral-grant', path: '/original' };
+    const saved = h.memoryAccountSnapshot();
+    assert.equal(saved.projects[0].nativeWorkspace, undefined, 'UI storage is not a folder grant');
+    h.state.projects = reload === 'workbench reload' ? JSON.parse(JSON.stringify(saved.projects)) : saved.projects;
+    h.state.storageEpoch += 2;
+    const restoredProject = h.state.projects[0];
+    const previousSessionId = restoredProject.sessions[0].runtimeSessionId;
+    assert.equal(await h.ensureNativeSession(), previousSessionId);
+    assert.deepEqual(restoredPaths, ['/original']);
+    assert.equal(h.calls[0][0], 'start');
+    assert.equal(h.calls[0][1].workspace, 'fresh-native-grant');
+    assert.equal(h.calls[0][1].resume, true);
+    assert.equal(h.calls[0][1].permission, 'controlled');
+    assert.equal(restoredProject.nativeWorkspace.id, 'fresh-native-grant');
+  });
+}
+
+test('a folder without a native account grant falls back to explicit selection', async () => {
+  let restores = 0;
+  const h = harness({ async restoreWorkspace(request) {
+    restores += 1;
+    assert.deepEqual(Object.keys(request), ['path'], 'the caller cannot nominate another account');
+    assert.equal(request.path, '/original');
+    return null;
+  } });
+  await h.ensureNativeSession();
+  assert.equal(restores, 1);
+  assert.deepEqual(h.calls.map(([kind]) => kind), ['select', 'start']);
+  assert.equal(h.project.nativeWorkspace.id, 'selected');
+});
+
+test('native workspace storage failure preserves the draft and does not open a picker', async () => {
+  const h = harness({ async restoreWorkspace() { throw new Error('Workspace grant storage is unavailable'); } });
+  h.prompt.value = 'Keep the pending request';
+  h.state.attachments = [{ name: 'notes.txt', content: 'Keep the attachment' }];
+  await h.send();
+  assert.equal(h.calls.length, 0);
+  assert.equal(h.prompt.value, 'Keep the pending request');
+  assert.equal(h.state.attachments[0].content, 'Keep the attachment');
+  assert.equal(h.project.path, '/original');
+  assert.equal(h.session.messages.length, 0);
+  assert.match(h.session.lastError.message, /Workspace grant storage is unavailable/);
+});
+
+for (const result of [undefined, { id: 'wrong-restored-grant', path: '/different' }]) {
+  test('an invalid native restoration result cannot select or rebind a folder: ' + String(result && result.path), async () => {
+    const h = harness({ async restoreWorkspace() { return result; } });
+    await assert.rejects(h.ensureNativeSession(), /original project folder/);
+    assert.equal(h.calls.length, 0);
+    assert.equal(h.project.path, '/original');
+    assert.equal(h.project.nativeWorkspace, undefined);
+  });
+}
+
+for (const change of ['account', 'chat']) {
+  for (const result of [null, { id: 'late-native-grant', path: '/original' }]) {
+    test('a late folder restoration after changing ' + change + ' cannot start or open a picker: ' + String(result && result.id), async () => {
+      let resolve;
+      const h = harness({ async restoreWorkspace() { return new Promise(done => { resolve = done; }); } });
+      const pending = h.ensureNativeSession();
+      for (let tick = 0; tick < 10 && !resolve; tick += 1) await Promise.resolve();
+      assert.equal(typeof resolve, 'function');
+      if (change === 'account') { h.state.accountScope = 'another-account'; h.state.storageEpoch += 1; }
+      else h.state.activeSessionId = 'another-chat';
+      resolve(result);
+      await assert.rejects(pending, /active chat changed/);
+      assert.equal(h.calls.length, 0);
+      assert.equal(h.project.nativeWorkspace, undefined);
+      assert.equal(h.session.runtimeSessionId, undefined);
+    });
+  }
+}
+
+test('cancelling selection after an unavailable grant keeps the original project and unsent input', async () => {
+  let picks = 0;
+  const h = harness({ async selectWorkspace() { picks += 1; return null; } });
+  h.prompt.value = 'Keep this draft';
+  h.state.attachments = [{ name: 'notes.txt', content: 'Keep these notes' }];
+  await h.send();
+  assert.equal(picks, 1);
+  assert.equal(h.calls.length, 0);
+  assert.equal(h.prompt.value, 'Keep this draft');
+  assert.equal(h.state.attachments[0].content, 'Keep these notes');
+  assert.equal(h.session.messages.length, 0);
+  assert.equal(h.project.path, '/original');
+});
+
+test('restoring the current native grant reuses its running session without closing or restarting it', async () => {
+  const sessionId = randomUUID();
+  let restores = 0;
+  const h = harness({
+    async restoreWorkspace() { restores += 1; return { id: 'current-grant', path: '/original' }; },
+    async listSessions() { return [{ sessionId, phase: 'running', reaped: false, configurationCurrent: true,
+      workspaceId: 'current-grant', permission: 'controlled', model: 'gpt-old', effort: 'high' }]; },
+    async selectWorkspace() { throw new Error('Unexpected picker'); },
+  });
+  h.session.runtimeSessionId = sessionId;
+  assert.equal(await h.ensureNativeSession(), sessionId);
+  assert.equal(restores, 1);
+  assert.equal(h.project.nativeWorkspace.id, 'current-grant');
+  assert.equal(h.state.nativeSessionId, sessionId);
+  assert.equal(h.calls.length, 0, 'restoration must not close, start, or send to the existing child');
+});
+
+test('an already selected native workspace does not need restoration or another picker', async () => {
+  const h = harness({
+    async restoreWorkspace() { throw new Error('Unexpected restoration'); },
+    async selectWorkspace() { throw new Error('Unexpected picker'); },
+  });
+  h.project.nativeWorkspace = { id: 'current-grant', path: '/original' };
+  await h.ensureNativeSession();
+  assert.equal(h.calls[0][1].workspace, 'current-grant');
+});
+
+test('an older bridge without restoration still supports explicit folder selection', async () => {
+  const h = harness({ restoreWorkspace: undefined });
+  await h.ensureNativeSession();
+  assert.deepEqual(h.calls.map(([kind]) => kind), ['select', 'start']);
 });
 
 test('a wrong folder leaves project metadata unchanged, then retry opens the picker again', async () => {

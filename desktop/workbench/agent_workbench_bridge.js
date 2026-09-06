@@ -104,6 +104,9 @@
     selectWorkspace: function () {
       return invoke('agent_select_workspace');
     },
+    restoreWorkspace: function (options) {
+      return invoke('agent_restore_workspace', { request: assertObject(options, 'options') });
+    },
     startSession: function (options) {
       return invoke('agent_start', { request: assertObject(options, 'options') });
     },

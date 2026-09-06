@@ -94,6 +94,22 @@ test('local bridge exposes the capability-v2 surface', async () => {
   assert.equal(Object.getOwnPropertyDescriptor(harness.window, '__CLARITIDE_CCB__').writable, false);
 });
 
+test('workspace restoration forwards only to the local native command and preserves rejection', async () => {
+  const calls = [];
+  const workspace = { id: 'new-native-grant', path: 'C:\\Work\\July', name: 'July' };
+  const harness = loadBridge(async (command, args) => {
+    calls.push([command, args]);
+    return workspace;
+  });
+  assert.equal(await harness.bridge.restoreWorkspace({ path: workspace.path }), workspace);
+  assert.equal(calls[0][0], 'agent_restore_workspace');
+  assert.equal(calls[0][1].request.path, workspace.path);
+  assert.throws(() => harness.bridge.restoreWorkspace(null), /object/);
+  const failure = new Error('Workspace grant storage is unavailable');
+  const rejected = loadBridge(async () => { throw failure; });
+  await assert.rejects(rejected.bridge.restoreWorkspace({ path: workspace.path }), error => error === failure);
+});
+
 test('event subscription polls normalized events and stops after unsubscribe', async () => {
   let polls = 0;
   const harness = loadBridge(async command => {

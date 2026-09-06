@@ -3229,6 +3229,15 @@
         state.attemptingResume = Boolean(session.runtimeSessionId);
         var workspaceValidated = false;
         try {
+          if (!workspace && project.path && typeof bridge.restoreWorkspace === 'function') {
+            // Saved project paths are hints, not folder permissions. Only native
+            // code can restore a grant belonging to the verified current account.
+            workspace = await bridge.restoreWorkspace({ path: project.path });
+            requireCurrentOwner();
+            // Null means the folder needs approval again. Unexpected responses
+            // and storage failures must not silently open another folder picker.
+            if (workspace !== null) requireOriginalWorkspace(project, workspace);
+          }
           if (!workspace) workspace = await bridge.selectWorkspace();
           requireCurrentOwner();
           requireOriginalWorkspace(project, workspace);
