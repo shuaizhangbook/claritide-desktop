@@ -1,0 +1,327 @@
+name: Build Claritide macOS desktop
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/macos-0.2.2]
+    paths:
+      - .github/workflows/build-myday-macos.yml
+      - desktop/scripts/package-macos.sh
+
+permissions:
+  contents: read
+
+env:
+  TAURI_BUILD: 'true'
+  AW_DISABLE_AUTO_UPDATE: 'true'
+  MACOSX_DEPLOYMENT_TARGET: '12.0'
+  CARGO_PROFILE_RELEASE_DEBUG: '0'
+  CARGO_PROFILE_DEV_DEBUG: '0'
+  CLARITIDE_CCB_REVISION: '77a7934e15d69da13879112ed7db695c9ee7a52a'
+  CLARITIDE_NODE_VERSION: '22.23.2'
+
+jobs:
+  build-macos-desktop:
+    name: Claritide macOS ${{ matrix.arch }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-14
+            arch: arm64
+          - runner: macos-15-intel
+            arch: x86_64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 120
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Check out the Claritide web UI
+        uses: actions/checkout@v7
+        with:
+          path: custom-webui
+
+      - name: Check out the desktop engine
+        run: |
+          git clone https://github.com/ActivityWatch/activitywatch.git activitywatch
+          git -C activitywatch checkout 115e49e111cd0a248be6230680544235ae3a5a8e
+          git -C activitywatch submodule update --init --recursive --depth 1
+
+      - name: Check out the pinned CCB runtime
+        uses: actions/checkout@v7
+        with:
+          repository: claude-code-best/claude-code
+          ref: ${{ env.CLARITIDE_CCB_REVISION }}
+          path: ccb
+
+      - name: Check out the Claritide sync agent
+        uses: actions/checkout@v7
+        with:
+          repository: shuaizhangbook/seeseeyou
+          ref: 03e31f5458f4c3d3e0ba5545e5baef718f2b58f4
+          path: seeseeyou
+          token: ${{ secrets.SEESEEYOU_REPO_TOKEN }}
+
+      - name: Apply Claritide desktop customizations
+        run: |
+          tar \
+            --exclude=.git \
+            --exclude=node_modules \
+            --exclude=dist \
+            --exclude=coverage \
+            -C custom-webui \
+            -cf - . \
+            | tar -C activitywatch/aw-tauri/aw-webui -xf -
+          git -C activitywatch/aw-tauri apply --unidiff-zero \
+            "$GITHUB_WORKSPACE/custom-webui/desktop/patches/aw-tauri-seeseeyou.patch"
+          git -C activitywatch/aw-tauri apply \
+            "$GITHUB_WORKSPACE/custom-webui/desktop/patches/aw-tauri-agent-nav-entry.patch"
+          git -C activitywatch/aw-tauri apply \
+            "$GITHUB_WORKSPACE/custom-webui/desktop/patches/aw-tauri-agent-same-window.patch"
+          git -C activitywatch/aw-tauri apply \
+            "$GITHUB_WORKSPACE/custom-webui/desktop/patches/aw-tauri-agent-full-access.patch"
+          git -C activitywatch/aw-tauri apply \
+            "$GITHUB_WORKSPACE/custom-webui/desktop/patches/aw-tauri-agent-bundled-runtime.patch"
+          git -C activitywatch/aw-tauri apply \
+            "$GITHUB_WORKSPACE/custom-webui/desktop/patches/aw-tauri-installer-language.patch"
+          git -C activitywatch/aw-tauri apply \
+            "$GITHUB_WORKSPACE/custom-webui/desktop/patches/aw-tauri-agent-windows-navigation.patch"
+          cp custom-webui/desktop/aw-tauri.iss activitywatch/scripts/package/aw-tauri.iss
+          cp custom-webui/desktop/inno/ChineseSimplified.isl \
+            activitywatch/scripts/package/ChineseSimplified.isl
+
+      - name: Verify the desktop port migration contract
+        run: |
+          grep -F 'port: 5600' activitywatch/aw-tauri/src-tauri/src/lib.rs
+          grep -F 'Migrated Claritide local port from 5601 to 5600' activitywatch/aw-tauri/src-tauri/src/lib.rs
+          grep -F 'Migrated Claritide sync API from port 5601 to 5600' activitywatch/aw-tauri/src-tauri/src/lib.rs
+          grep -F 'sync-rebind-pending' activitywatch/aw-tauri/src-tauri/src/lib.rs
+          grep -F 'fresh_sync_cursor_timestamp' activitywatch/aw-tauri/src-tauri/src/lib.rs
+          grep -F 'commands.allow = ["get_sync_status"]' activitywatch/aw-tauri/src-tauri/permissions/sync-control.toml
+          grep -F 'commands.allow = ["configure_sync"]' activitywatch/aw-tauri/src-tauri/permissions/sync-control.toml
+          grep -F 'commands.allow = ["get_or_create_installation_id"]' activitywatch/aw-tauri/src-tauri/permissions/sync-control.toml
+          grep -F 'commands.allow = ["rotate_installation_id"]' activitywatch/aw-tauri/src-tauri/permissions/sync-control.toml
+          grep -F 'commands.allow = ["pause_sync"]' activitywatch/aw-tauri/src-tauri/permissions/sync-control.toml
+          grep -F 'commands.allow = ["resume_sync"]' activitywatch/aw-tauri/src-tauri/permissions/sync-control.toml
+          grep -F 'commands.allow = ["clear_sync"]' activitywatch/aw-tauri/src-tauri/permissions/sync-control.toml
+          grep -F 'commands.allow = ["trigger_sync_now"]' activitywatch/aw-tauri/src-tauri/permissions/sync-control.toml
+          grep -F '"https://watch.sding.me"' activitywatch/aw-tauri/src-tauri/capabilities/seeseeyou-remote.json
+          grep -F '"https://watch.sding.me/*"' activitywatch/aw-tauri/src-tauri/capabilities/seeseeyou-remote.json
+          grep -F '"local": false' activitywatch/aw-tauri/src-tauri/capabilities/seeseeyou-remote.json
+          grep -F '"allow-get-sync-status"' activitywatch/aw-tauri/src-tauri/capabilities/seeseeyou-remote.json
+          grep -F '"allow-configure-sync"' activitywatch/aw-tauri/src-tauri/capabilities/seeseeyou-remote.json
+          grep -F '"allow-pause-sync"' activitywatch/aw-tauri/src-tauri/capabilities/seeseeyou-remote.json
+          grep -F '"allow-resume-sync"' activitywatch/aw-tauri/src-tauri/capabilities/seeseeyou-remote.json
+          grep -F '"allow-clear-sync"' activitywatch/aw-tauri/src-tauri/capabilities/seeseeyou-remote.json
+          grep -F '"allow-trigger-sync"' activitywatch/aw-tauri/src-tauri/capabilities/seeseeyou-remote.json
+          grep -F '"https://watch.sding.me/admin/join"' activitywatch/aw-tauri/src-tauri/capabilities/seeseeyou-join.json
+          grep -F '"https://watch.sding.me/admin/join/*"' activitywatch/aw-tauri/src-tauri/capabilities/seeseeyou-join.json
+          grep -F '"allow-open-external"' activitywatch/aw-tauri/src-tauri/capabilities/seeseeyou-join.json
+          grep -F '"seeseeyou-remote"' activitywatch/aw-tauri/src-tauri/tauri.conf.json
+          grep -F 'SEESEEYOU_WORKSPACE_URL' activitywatch/aw-tauri/src-tauri/src/lib.rs
+          grep -F 'include_str!("seeseeyou_bridge.js")' activitywatch/aw-tauri/src-tauri/src/lib.rs
+          grep -F '"version": "0.2.2"' activitywatch/aw-tauri/src-tauri/tauri.conf.json
+          python - <<'PY'
+          from pathlib import Path
+
+          lock = Path('activitywatch/aw-tauri/src-tauri/Cargo.lock').read_text(encoding='utf-8')
+          packages = lock.split('[[package]]')
+          assert any('name = "aw-tauri"' in package and 'version = "0.2.2"' in package for package in packages)
+          assert any('name = "android_system_properties"' in package and 'version = "0.1.5"' in package for package in packages)
+          PY
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.CLARITIDE_NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: custom-webui/package-lock.json
+
+      - name: Run desktop preflight tests
+        run: |
+          node --check activitywatch/aw-tauri/src-tauri/src/seeseeyou_bridge.js
+          node --check activitywatch/aw-tauri/src-tauri/src/agent_workbench_bridge.js
+          SEESEEYOU_BRIDGE_PATH="$GITHUB_WORKSPACE/activitywatch/aw-tauri/src-tauri/src/seeseeyou_bridge.js" \
+            node --test custom-webui/desktop/tests/seeseeyou_bridge.test.cjs
+          SEESEEYOU_BRIDGE_PATH="$GITHUB_WORKSPACE/activitywatch/aw-tauri/src-tauri/src/seeseeyou_bridge.js" \
+            node --test custom-webui/desktop/tests/agent_nav_entry.test.cjs
+          CLARITIDE_INSTALLER_SCRIPT="$GITHUB_WORKSPACE/custom-webui/desktop/aw-tauri.iss" \
+            node --test custom-webui/desktop/tests/installer_language.test.cjs
+          CLARITIDE_AGENT_BRIDGE_PATH="$GITHUB_WORKSPACE/activitywatch/aw-tauri/src-tauri/src/agent_workbench_bridge.js" \
+            node --test custom-webui/desktop/tests/agent_workbench_bridge.test.cjs
+          CLARITIDE_AGENT_RUNTIME_PATH="$GITHUB_WORKSPACE/activitywatch/aw-tauri/src-tauri/src/agent_runtime.rs" \
+            CLARITIDE_AGENT_HTML_PATH="$GITHUB_WORKSPACE/activitywatch/aw-tauri/src-tauri/assets/agent-workbench.html" \
+            node --test custom-webui/desktop/tests/agent_workbench_html.test.cjs
+
+      - name: Set up Bun for the pinned CCB build
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6
+        with:
+          bun-version: '1.3.0'
+
+      - name: Build and stage the bundled CCB runtime
+        working-directory: ccb
+        env:
+          CLAUDE_CODE_SKIP_CHROME_MCP_SETUP: '1'
+        run: |
+          test "$(git rev-parse HEAD)" = "$CLARITIDE_CCB_REVISION"
+          bun install --frozen-lockfile
+          bun run build:vite
+          bash "$GITHUB_WORKSPACE/custom-webui/desktop/scripts/prepare-ccb-runtime.sh" \
+            "$GITHUB_WORKSPACE/ccb" \
+            "$GITHUB_WORKSPACE/activitywatch/aw-tauri/src-tauri" \
+            "$CLARITIDE_CCB_REVISION" \
+            "$CLARITIDE_NODE_VERSION"
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Verify the deployed Claritide desktop APIs
+        run: |
+          python - <<'PY'
+          import json
+          import time
+          import urllib.error
+          import urllib.request
+
+          def request_json(url, expected_status=200):
+              last_error = None
+              for _ in range(6):
+                  try:
+                      with urllib.request.urlopen(url, timeout=20) as response:
+                          if response.status != expected_status:
+                              raise RuntimeError(f"unexpected HTTP {response.status} for {url}")
+                          return json.load(response)
+                  except Exception as error:
+                      last_error = error
+                      time.sleep(5)
+              raise last_error
+
+          google = request_json('https://watch.sding.me/api/v1/auth/google/start?client=desktop')
+          assert google.get('authorization_url', '').startswith('https://accounts.google.com/')
+          assert google.get('poll_token')
+          try:
+              urllib.request.urlopen('https://watch.sding.me/api/v1/me/teams', timeout=20)
+          except urllib.error.HTTPError as error:
+              assert error.code == 401, error.code
+          else:
+              raise AssertionError('unauthenticated /me/teams must return 401')
+          PY
+
+      - name: Test Claritide Google sign-in helpers
+        working-directory: custom-webui
+        run: |
+          npm ci
+          npm run test:unit -- --runInBand test/unit/seeseeyou.test.js
+          npm run build
+          cp -R dist ../activitywatch/aw-tauri/aw-webui/dist
+
+      - name: Generate Claritide desktop icons
+        working-directory: activitywatch/aw-tauri
+        run: |
+          npm ci
+          npm run tauri icon "$GITHUB_WORKSPACE/custom-webui/desktop/assets/claritide-icon.svg"
+
+      - name: Test desktop engine
+        working-directory: activitywatch/aw-tauri/src-tauri
+        run: cargo test --lib
+
+      - name: Verify compiled Tauri access control
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          schema_dir = Path('activitywatch/aw-tauri/src-tauri/gen/schemas')
+          capabilities = json.loads((schema_dir / 'capabilities.json').read_text(encoding='utf-8'))
+          remote = capabilities.get('seeseeyou-remote')
+          assert remote, 'seeseeyou-remote capability was not compiled'
+          assert 'https://watch.sding.me' in remote['remote']['urls']
+          assert 'https://watch.sding.me/*' in remote['remote']['urls']
+          assert 'allow-get-sync-status' in remote['permissions']
+          assert 'allow-open-external' in remote['permissions']
+          assert 'allow-open-agent-workbench' in remote['permissions']
+          local = capabilities.get('agent-workbench')
+          assert local, 'agent-workbench capability was not compiled'
+          assert local['local'] is True
+          assert local['windows'] == ['main']
+          for permission in (
+              'allow-agent-get-status',
+              'allow-agent-select-workspace',
+              'allow-agent-start',
+              'allow-agent-send',
+              'allow-agent-interrupt',
+              'allow-agent-close',
+              'allow-agent-poll-events',
+          ):
+              assert permission in local['permissions']
+
+          manifests = json.loads((schema_dir / 'acl-manifests.json').read_text(encoding='utf-8'))
+          app_permissions = manifests['__app-acl__']['permissions']
+          assert app_permissions['allow-get-sync-status']['commands']['allow'] == ['get_sync_status']
+          assert app_permissions['allow-open-external']['commands']['allow'] == ['open_external']
+          assert app_permissions['allow-open-agent-workbench']['commands']['allow'] == [
+              'open_agent_workbench'
+          ]
+          assert app_permissions['allow-agent-start']['commands']['allow'] == ['agent_start']
+          assert app_permissions['allow-agent-send']['commands']['allow'] == ['agent_send']
+          PY
+
+      - name: Install packaging dependencies
+        run: |
+          python -m pip install poetry==2.2.1 pyinstaller==6.15.0 -r seeseeyou/backend/requirements.txt
+
+      - name: Test Claritide enrollment and sync agent
+        working-directory: seeseeyou
+        run: |
+          python -m unittest \
+            tests.test_usage_sync_state \
+            tests.test_desktop_auto_enrollment \
+            tests.test_google_desktop_auth
+
+      - name: Build the background sync program
+        working-directory: seeseeyou/admin/client
+        run: |
+          pyinstaller \
+            --noconfirm \
+            --clean \
+            --onefile \
+            --name seeseeyou-sync \
+            --paths . \
+            usage-sync.py
+          ./dist/seeseeyou-sync --help
+
+      - name: Build Claritide desktop
+        working-directory: activitywatch
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          poetry install
+          make build TAURI_BUILD=true
+
+      - name: Create macOS app, DMG and ZIP
+        working-directory: activitywatch
+        run: |
+          source venv/bin/activate
+          make package TAURI_BUILD=true
+          bash "$GITHUB_WORKSPACE/custom-webui/desktop/scripts/package-macos.sh" \
+            "$GITHUB_WORKSPACE/activitywatch" \
+            "$GITHUB_WORKSPACE/seeseeyou/admin/client/dist/seeseeyou-sync"
+
+      - name: Upload macOS packages
+        uses: actions/upload-artifact@v7
+        with:
+          name: Claritide-0.2.2-macos-${{ matrix.arch }}
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            activitywatch/dist/Claritide-0.2.2-macos-*.dmg
+            activitywatch/dist/Claritide-0.2.2-macos-*.zip
+            activitywatch/dist/Claritide-0.2.2-macos-*.sha256
