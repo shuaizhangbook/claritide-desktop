@@ -1,11 +1,11 @@
-; Inno Setup script for Claritide Desktop
+﻿; Inno Setup script for Claritide Desktop
 ;
 ; This is separate from activitywatch-setup.iss (aw-qt) to avoid
 ; installation collisions. Uses a different AppId, install directory,
 ; and display name.
 
 #define MyAppName "Claritide"
-#define MyAppVersion "0.2.0"
+#define MyAppVersion "0.2.4"
 #define MyAppPublisher "Claritide"
 #define MyAppURL "https://watch.sding.me/"
 #define MyAppExeName "aw-tauri.exe"
@@ -61,7 +61,14 @@ Type: files; Name: "{userstartup}\{#MyAppName}.lnk"
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 
+Filename: "{app}\{#MyAppExeName}"; Flags: nowait runasoriginaluser; Check: IsClaritideUpdate
+
 [Code]
+function IsClaritideUpdate: Boolean;
+begin
+  Result := ExpandConstant('{param:CLARITIDEUPDATE|0}') = '1';
+end;
+
 procedure CurStepChanged(CurStep: TSetupStep);
 var
   AppLanguage: String;

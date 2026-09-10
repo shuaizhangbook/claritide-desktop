@@ -16,3 +16,8 @@ test('Windows installer persists the selected app language', () => {
   assert.match(installer, /claritide-installer-language\.txt/);
   assert.match(installer, /SaveStringToFile/);
 });
+
+test('Windows installer embeds the target desktop version', () => {
+  const expected = process.env.CLARITIDE_DESKTOP_VERSION || '0.2.4';
+  assert.equal(installer.match(/^#define MyAppVersion "([^"]+)"\r?$/m)?.[1], expected);
+});

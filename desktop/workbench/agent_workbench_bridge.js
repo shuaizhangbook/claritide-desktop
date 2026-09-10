@@ -73,6 +73,23 @@
 
   var bridge = Object.freeze({
     capabilityVersion: 2,
+    markReady: function () {
+      var query = new URLSearchParams(location.search || '');
+      var attemptId = query.get('attempt');
+      // A normal reload can open a document without a pending launch.
+      if (!attemptId) return Promise.resolve();
+      return invoke('agent_workbench_ready', { attemptId: attemptId }).then(function () {
+        // A later reload is not another launch. Keep the locale, but retire
+        // this one-time correlation ID once the native side has accepted it.
+        if (window.history && typeof window.history.replaceState === 'function') {
+          query.delete('attempt');
+          var search = query.toString();
+          try {
+            window.history.replaceState(null, '', (location.pathname || '/') + (search ? '?' + search : '') + (location.hash || ''));
+          } catch (_error) { /* URL cleanup must not turn readiness into failure. */ }
+        }
+      });
+    },
     getStatus: function () {
       return invoke('agent_get_status');
     },
@@ -87,11 +104,21 @@
     selectWorkspace: function () {
       return invoke('agent_select_workspace');
     },
+    restoreWorkspace: function (options) {
+      return invoke('agent_restore_workspace', { request: assertObject(options, 'options') });
+    },
     startSession: function (options) {
       return invoke('agent_start', { request: assertObject(options, 'options') });
     },
     send: function (options) {
       return invoke('agent_send', { request: assertObject(options, 'options') });
+    },
+    respondToApproval: function (options) {
+      options = assertObject(options, 'options');
+      return invoke('agent_send', { request: {
+        sessionId: options.sessionId,
+        approval: { requestId: options.requestId, decision: options.decision }
+      } });
     },
     stop: function (options) {
       return invoke('agent_interrupt', { request: assertObject(options, 'options') });
@@ -99,8 +126,9 @@
     close: function (options) {
       return invoke('agent_close', { request: assertObject(options, 'options') });
     },
-    resume: function () {
-      return unsupported('resume');
+    resume: function (options) {
+      options = assertObject(options, 'options');
+      return invoke('agent_start', { request: Object.assign({}, options, { resume: true }) });
     },
     onEvent: function (handler) {
       if (typeof handler !== 'function') throw new TypeError('handler must be a function');

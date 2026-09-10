@@ -4,10 +4,12 @@ on:
   push:
     branches: [ master ]
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
     branches: [ master ]
 
 jobs:
   build-webpack:
+    if: ${{ github.event_name != 'pull_request' || !github.event.pull_request.draft }}
     name: Build webpack (node-${{ matrix.node-version }})
     runs-on: ubuntu-latest
 
@@ -36,6 +38,7 @@ jobs:
         path: dist/*
 
   build-vite:
+    if: ${{ github.event_name != 'pull_request' || !github.event.pull_request.draft }}
     name: Build vite (node-${{ matrix.node-version }})
     runs-on: ubuntu-latest
 
@@ -64,6 +67,7 @@ jobs:
         path: dist/*
 
   test:
+    if: ${{ github.event_name != 'pull_request' || !github.event.pull_request.draft }}
     name: Test (node-${{ matrix.node-version }}, py-${{ matrix.python-version }}, ${{ matrix.aw-server }} ${{ matrix.aw-version }})
     runs-on: ubuntu-latest
 
