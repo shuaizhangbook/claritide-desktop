@@ -4,6 +4,7 @@ const test = require('node:test');
 const vm = require('node:vm');
 
 const bridgePath = process.env.SEESEEYOU_BRIDGE_PATH;
+const desktopVersion = process.env.CLARITIDE_DESKTOP_VERSION || '0.2.3';
 if (!bridgePath) {
   throw new Error('SEESEEYOU_BRIDGE_PATH must point to the patched seeseeyou_bridge.js');
 }
@@ -64,7 +65,7 @@ function loadBridge({
     const value = await invoke(command, args);
     if (command === 'get_sync_status' && value && typeof value === 'object') {
       return {
-        desktop_version: '0.2.3',
+        desktop_version: desktopVersion,
         bridge_protocol: 2,
         ...value,
       };
@@ -461,7 +462,7 @@ test('recent server activity overrides a stale native worker error', async () =>
       calls.push(command);
       if (command === 'get_sync_status') {
         return {
-          desktop_version: '0.2.3',
+          desktop_version: desktopVersion,
           bridge_protocol: 2,
           configured: true,
           paused: false,
