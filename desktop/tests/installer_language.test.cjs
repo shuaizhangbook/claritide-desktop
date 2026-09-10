@@ -18,5 +18,5 @@ test('Windows installer persists the selected app language', () => {
 });
 
 test('Windows installer embeds the target desktop version', () => {
-  assert.match(installer, /^#define MyAppVersion "0\.2\.2"\r?$/m);
+  assert.match(installer, /^#define MyAppVersion "0\.2\.3"\r?$/m);
 });
