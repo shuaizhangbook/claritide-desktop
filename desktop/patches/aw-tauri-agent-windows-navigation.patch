@@ -1,0 +1,2900 @@
+diff --git a/src-tauri/assets/agent-workbench.html b/src-tauri/assets/agent-workbench.html
+index 702a937..2c0cff4 100644
+--- a/src-tauri/assets/agent-workbench.html
++++ b/src-tauri/assets/agent-workbench.html
+@@ -6,155 +6,1916 @@
+   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src ipc: http://ipc.localhost https://ipc.localhost;">
+   <title>Claritide · AI 工作台</title>
+   <style>
+-    :root{font-family:Inter,"PingFang SC","Microsoft YaHei",system-ui,sans-serif;color:#17332f;background:#f5f8f7;--ink:#17332f;--muted:#657a76;--dim:#8a9a97;--line:#dce8e5;--strong:#c7dad6;--surface:#fff;--soft:#f8fbfa;--mint:#0d8f85;--mint-dark:#08746d;--mint-soft:#e8f7f4;--mint-line:#b6e0da;--red:#b44952;--red-soft:#fff1f2;--amber:#8b621e;--amber-soft:#fff7e7;--blue:#346e9d;--blue-soft:#eef6fc;--shadow:0 16px 42px rgba(22,59,53,.12)}
+-    *{box-sizing:border-box}html,body{width:100%;min-width:920px;height:100%;margin:0}body{overflow:hidden;background:#f5f8f7;color:var(--ink);font-size:14px}button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid rgba(13,143,133,.2);outline-offset:2px}[hidden]{display:none!important}
+-    .app{height:100vh;display:grid;grid-template-rows:68px minmax(0,1fr) 28px}.topbar{margin:10px 12px 0;display:grid;grid-template-columns:minmax(220px,1fr) auto minmax(220px,1fr);align-items:center;gap:18px;padding:0 18px;border:1px solid var(--line);border-radius:14px 14px 0 0;background:var(--surface)}.brand{display:flex;align-items:center;gap:10px}.brand-mark{width:38px;height:38px;display:grid;place-items:center;border-radius:10px;background:var(--mint);color:#fff;font-size:20px;font-weight:800}.brand-title{font-weight:800}.brand-sub{margin-top:3px;color:var(--muted);font-size:11px}.nav{display:flex;gap:6px}.nav button{height:38px;padding:0 13px;border:0;border-radius:9px;background:transparent;font-weight:650;white-space:nowrap}.nav button:hover{background:var(--soft)}.nav .active{position:relative;padding-left:25px;background:var(--mint-soft);color:var(--mint-dark)}.nav .active:before{content:"";position:absolute;left:12px;top:50%;width:6px;height:6px;border-radius:50%;background:var(--mint);transform:translateY(-50%)}.top-actions{display:flex;align-items:center;justify-content:flex-end;gap:9px}.runtime-pill{max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:7px 10px;border:1px solid var(--mint-line);border-radius:999px;background:var(--mint-soft);color:var(--mint-dark);font-size:11px;font-weight:700}.plain{height:34px;padding:0 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+-    .workspace{min-height:0;margin:0 12px;display:grid;grid-template-columns:294px minmax(480px,1fr) 360px;overflow:hidden;border:1px solid var(--line);background:var(--surface)}.sidebar,.center,.activity{min-height:0}.sidebar{display:grid;grid-template-rows:auto auto minmax(0,1fr);border-right:1px solid var(--line);background:#fbfdfc}.sidebar-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:13px}.btn{min-height:36px;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:0 12px;border-radius:8px;font-weight:650}.btn.primary{border:1px solid var(--mint);background:var(--mint);color:#fff}.btn.primary:hover{background:var(--mint-dark)}.btn.secondary{border:1px solid var(--strong);background:var(--surface)}.btn.secondary:hover{border-color:var(--mint-line);background:var(--mint-soft);color:var(--mint-dark)}.btn.ghost{border:1px solid transparent;background:transparent;color:var(--muted)}.btn.danger{border:1px solid #e7b3b8;background:var(--surface);color:var(--red)}.btn:disabled{cursor:not-allowed;opacity:.48}.search{margin:0 13px 12px;width:calc(100% - 26px);height:38px;padding:0 11px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}.project-scroll{min-height:0;overflow:auto;padding:0 8px 16px}.section-label{padding:5px 10px 8px;color:var(--muted);font-size:11px;font-weight:700}.empty-projects{margin:18px 10px;padding:16px;border:1px dashed var(--strong);border-radius:10px;color:var(--muted);font-size:12px;line-height:1.6;text-align:center}.project-row{width:100%;min-height:55px;display:grid;grid-template-columns:10px minmax(0,1fr) auto;align-items:center;gap:9px;padding:8px 10px;border:0;border-radius:9px;background:transparent;text-align:left}.project-row:hover{background:#f2f7f5}.project-row.active{background:var(--mint-soft)}.project-dot{width:8px;height:8px;border-radius:3px;background:var(--mint)}.project-name{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}.project-path{display:block;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--dim);font-size:10px}.chevron{color:var(--dim)}.session-list{margin:0 6px 8px 14px;padding-left:16px;border-left:1px solid var(--line)}.session-row{width:100%;min-height:40px;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 9px;border:0;border-radius:8px;background:transparent;text-align:left}.session-row:hover{background:#f2f7f5}.session-row.active{background:#dff3ef;color:var(--mint-dark)}.session-title{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.session-time{color:var(--dim);font-size:10px}
+-    .center{display:grid;grid-template-rows:64px minmax(0,1fr) auto;background:var(--surface)}.session-toolbar{display:grid;grid-template-columns:minmax(200px,1fr) auto;align-items:center;gap:12px;padding:8px 15px;border-bottom:1px solid var(--line)}.session-heading strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.session-meta{margin-top:4px;color:var(--muted);font-size:10px}.toolbar-controls{display:flex;gap:6px}.compact{height:32px;max-width:145px;padding:0 25px 0 8px;border:1px solid var(--line);border-radius:7px;background:var(--surface);font-size:11px}.conversation{min-height:0;overflow:auto;background:#fcfefd}.welcome{height:100%;display:grid;place-items:center;padding:36px;text-align:center}.welcome-card{max-width:520px}.welcome-mark{width:50px;height:50px;display:grid;place-items:center;margin:0 auto 15px;border-radius:14px;background:var(--mint-soft);color:var(--mint-dark);font-size:24px;font-weight:800}.welcome h1{margin:0 0 8px;font-size:20px}.welcome p{margin:0;color:var(--muted);line-height:1.7}.message{display:grid;grid-template-columns:34px minmax(0,1fr);gap:11px;padding:17px 18px;border-bottom:1px solid #edf3f1}.message.user{background:var(--surface)}.avatar{width:32px;height:32px;display:grid;place-items:center;border-radius:9px;background:var(--mint);color:#fff;font-size:11px;font-weight:800}.message.user .avatar{border:1px solid var(--mint-line);background:var(--mint-soft);color:var(--mint-dark)}.message-head{display:flex;align-items:center;gap:8px;margin:0 0 6px}.message-head strong{font-size:12px}.message-head span{color:var(--dim);font-size:10px}.message-body{max-width:760px;white-space:pre-wrap;overflow-wrap:anywhere;color:#29443f;line-height:1.7}.run-card{margin-top:11px;border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}.run-head{min-height:42px;display:flex;align-items:center;gap:8px;padding:0 11px;border-bottom:1px solid var(--line);font-weight:700}.pulse{width:8px;height:8px;border-radius:50%;background:var(--mint);box-shadow:0 0 0 4px var(--mint-soft)}.run-head small{margin-left:auto;color:var(--dim);font-weight:500}.event-list{max-height:220px;overflow:auto}.event-row{display:grid;grid-template-columns:74px minmax(0,1fr);gap:8px;padding:9px 11px;border-bottom:1px solid #f0f4f3;color:var(--muted);font:11px/1.45 ui-monospace,SFMono-Regular,Consolas,monospace}.event-row strong{color:var(--ink);font-family:Inter,"PingFang SC",system-ui,sans-serif}.permission-card{margin:11px;padding:12px;border:1px solid #b9d8e9;border-radius:9px;background:var(--blue-soft);color:#416781;font-size:12px;line-height:1.55}.permission-card strong{display:block;margin-bottom:4px;color:#315f86}.permission-card .actions{display:flex;justify-content:flex-end;gap:7px;margin-top:10px}.permission-card .actions button{min-height:32px;font-size:11px}
+-    .composer-area{padding:11px 15px 13px;border-top:1px solid var(--line)}.composer{border:1px solid var(--strong);border-radius:10px;background:var(--surface)}.composer:focus-within{border-color:var(--mint);box-shadow:0 0 0 3px rgba(13,143,133,.08)}.composer textarea{width:100%;min-height:72px;max-height:150px;resize:none;padding:11px 12px 4px;border:0;outline:0;background:transparent;line-height:1.55}.composer-row{display:flex;align-items:center;gap:7px;padding:0 8px 8px}.composer-row small{color:var(--dim)}.spacer{flex:1}.composer-settings{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:7px;padding-top:8px}.field label{display:block;margin-bottom:4px;color:var(--dim);font-size:9px}.field select{width:100%;height:35px;padding:0 24px 0 8px;border:1px solid var(--line);border-radius:7px;background:var(--soft);font-size:11px}
+-    .activity{display:grid;grid-template-rows:55px 42px minmax(0,1fr);border-left:1px solid var(--line);background:var(--surface)}.activity.closed{display:none}.activity-head{display:flex;align-items:center;gap:8px;padding:0 13px;border-bottom:1px solid var(--line)}.activity-head small{color:var(--dim)}.activity-head button{margin-left:auto}.tabs{display:flex;gap:18px;padding:0 13px;border-bottom:1px solid var(--line)}.tab{height:42px;padding:0 3px;border:0;border-bottom:2px solid transparent;background:transparent;color:var(--muted);font-size:11px;font-weight:650}.tab.active{border-bottom-color:var(--mint);color:var(--mint-dark)}.activity-body{min-height:0;overflow:auto}.activity-empty{padding:28px 18px;color:var(--muted);font-size:12px;line-height:1.65;text-align:center}.log-item{padding:11px 13px;border-bottom:1px solid #edf3f1}.log-item strong{display:block;margin-bottom:4px;font-size:11px}.log-item p{margin:0;color:var(--muted);font-size:10px;line-height:1.55;overflow-wrap:anywhere}.statusbar{display:flex;align-items:center;gap:10px;padding:0 14px;border-top:1px solid var(--line);background:#f8fbfa;color:var(--muted);font-size:10px}.statusbar .end{margin-left:auto}
+-    .modal-backdrop{position:fixed;inset:0;z-index:50;display:none;place-items:center;padding:22px;background:rgba(19,45,41,.36)}.modal-backdrop.open{display:grid}.modal{width:min(470px,100%);max-height:calc(100vh - 44px);overflow:auto;border:1px solid var(--strong);border-radius:13px;background:var(--surface);box-shadow:var(--shadow)}.modal header{display:flex;align-items:center;justify-content:space-between;padding:15px 17px;border-bottom:1px solid var(--line)}.modal h2{margin:0;font-size:16px}.modal-body{padding:16px 17px}.modal-copy{margin:0 0 13px;color:var(--muted);font-size:11px;line-height:1.65}.form-field{margin-bottom:13px}.form-field label{display:block;margin-bottom:5px;color:var(--muted);font-size:11px;font-weight:650}.form-field input,.form-field select{width:100%;height:40px;padding:0 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}.warning{padding:12px;border:1px solid #ecd3a4;border-radius:9px;background:var(--amber-soft);color:#75561e;font-size:11px;line-height:1.65}.modal footer{display:flex;justify-content:flex-end;gap:8px;padding:11px 17px 15px}.toast{position:fixed;left:50%;bottom:37px;z-index:80;padding:9px 13px;border:1px solid var(--mint-line);border-radius:8px;background:var(--surface);box-shadow:var(--shadow);color:var(--mint-dark);font-size:11px;font-weight:700;transform:translate(-50%,16px);opacity:0;pointer-events:none;transition:150ms}.toast.visible{transform:translate(-50%,0);opacity:1}
+-    @media(max-width:1180px){.workspace{grid-template-columns:260px minmax(430px,1fr) 320px}.topbar{grid-template-columns:200px 1fr 190px}.nav button{padding-inline:9px}.nav .active{padding-left:21px}.nav .active:before{left:9px}}
++    :root {
++      font-family: Inter, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
++      color: #222320;
++      background: #fff;
++      --ink: #222320;
++      --muted: #696b66;
++      --dim: #969892;
++      --line: #e7e8e4;
++      --line-strong: #d8dad4;
++      --sidebar: #f3f3f0;
++      --soft: #f7f7f5;
++      --active: #e8e8e4;
++      --surface: #fff;
++      --mint: #0b8f84;
++      --mint-dark: #08756d;
++      --mint-soft: #e7f6f3;
++      --red: #b5444d;
++      --red-soft: #fff2f2;
++      --amber: #805b19;
++      --amber-soft: #fff7e6;
++      --shadow: 0 14px 38px rgba(29, 31, 27, .13);
++    }
++    * { box-sizing: border-box; }
++    html, body { width: 100%; min-width: 900px; height: 100%; margin: 0; }
++    body { overflow: hidden; background: var(--surface); color: var(--ink); font-size: 14px; }
++    button, input, select, textarea { font: inherit; color: inherit; }
++    button { cursor: pointer; }
++    button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, summary:focus-visible {
++      outline: 3px solid rgba(11, 143, 132, .18);
++      outline-offset: 2px;
++    }
++    [hidden] { display: none !important; }
++
++    .app { height: 100vh; display: grid; grid-template-columns: 276px minmax(0, 1fr); }
++    .sidebar {
++      min-height: 0;
++      display: grid;
++      grid-template-rows: auto auto minmax(0, 1fr) auto;
++      border-right: 1px solid var(--line);
++      background: var(--sidebar);
++    }
++    .sidebar-head { height: 56px; display: flex; align-items: center; gap: 9px; padding: 0 14px; }
++    .brand-mark {
++      width: 28px;
++      height: 28px;
++      display: grid;
++      place-items: center;
++      border-radius: 8px;
++      background: var(--mint);
++      color: #fff;
++      font-weight: 800;
++    }
++    .brand-name { font-size: 14px; font-weight: 750; }
++    .spacer { flex: 1; }
++    .text-button {
++      min-height: 32px;
++      padding: 0 10px;
++      display: inline-flex;
++      align-items: center;
++      justify-content: center;
++      gap: 6px;
++      border: 0;
++      border-radius: 8px;
++      background: transparent;
++      color: var(--muted);
++      font-size: 12px;
++    }
++    .text-button:hover { background: var(--active); color: var(--ink); }
++    .new-chat {
++      height: 40px;
++      margin: 3px 10px 13px;
++      display: flex;
++      align-items: center;
++      justify-content: space-between;
++      padding: 0 12px;
++      border: 0;
++      border-radius: 9px;
++      background: transparent;
++      font-weight: 650;
++      text-align: left;
++    }
++    .new-chat:hover { background: var(--active); }
++    .shortcut { color: var(--dim); font-size: 11px; font-weight: 500; }
++    .sidebar-scroll { min-height: 0; overflow: auto; padding: 0 8px 18px; }
++    .section-head { height: 34px; display: flex; align-items: center; padding: 0 7px; color: var(--muted); font-size: 11px; font-weight: 650; }
++    .section-head button { margin-left: auto; }
++    .compact-action {
++      min-width: 28px;
++      height: 28px;
++      padding: 0 7px;
++      display: inline-grid;
++      place-items: center;
++      border: 0;
++      border-radius: 7px;
++      background: transparent;
++      color: var(--muted);
++      font-size: 12px;
++    }
++    .compact-action:hover { background: var(--active); color: var(--ink); }
++    .empty-projects { margin: 6px 5px; padding: 14px; color: var(--muted); font-size: 12px; line-height: 1.6; }
++    .project { margin-bottom: 4px; }
++    .item-shell {
++      position: relative;
++      display: grid;
++      grid-template-columns: minmax(0, 1fr) 30px;
++      align-items: center;
++      border-radius: 8px;
++    }
++    .item-shell:hover, .item-shell.active { background: var(--active); }
++    .project-row, .session-row { width: 100%; min-width: 0; border: 0; background: transparent; text-align: left; }
++    .project-row { height: 38px; padding: 0 7px; font-weight: 650; }
++    .session-row { min-height: 34px; padding: 6px 7px 6px 25px; color: #454743; font-size: 12px; }
++    .project-name, .session-title { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
++    .session-list { padding: 1px 0 4px; }
++    .session-shell.active { background: #dcdcd7; }
++    .item-menu { position: relative; height: 28px; }
++    .item-menu summary {
++      width: 28px;
++      height: 28px;
++      display: grid;
++      place-items: center;
++      border-radius: 7px;
++      color: var(--muted);
++      cursor: pointer;
++      list-style: none;
++      opacity: 0;
++      font-size: 11px;
++    }
++    .item-shell:hover .item-menu summary, .item-menu[open] summary { opacity: 1; }
++    .item-menu summary::-webkit-details-marker, .header-menu summary::-webkit-details-marker { display: none; }
++    .menu-popover {
++      position: absolute;
++      right: 0;
++      top: 30px;
++      z-index: 30;
++      width: 138px;
++      padding: 5px;
++      border: 1px solid var(--line);
++      border-radius: 10px;
++      background: #fff;
++      box-shadow: var(--shadow);
++    }
++    .menu-popover button { width: 100%; height: 33px; padding: 0 9px; border: 0; border-radius: 7px; background: transparent; text-align: left; font-size: 12px; }
++    .menu-popover button:hover { background: var(--soft); }
++    .menu-popover .danger { color: var(--red); }
++    .sidebar-foot { min-height: 48px; display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-top: 1px solid var(--line); color: var(--muted); font-size: 11px; }
++    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--dim); }
++    .status-dot.ready { background: var(--mint); }
++
++    .main { min-width: 0; min-height: 0; position: relative; display: grid; grid-template-rows: 56px minmax(0, 1fr); background: #fff; }
++    .main-head { display: flex; align-items: center; gap: 10px; padding: 0 18px; border-bottom: 1px solid var(--line); }
++    .conversation-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-weight: 700; }
++    .conversation-path { min-width: 0; max-width: 42%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--dim); font-size: 11px; }
++    .header-menu { position: relative; }
++    .header-menu summary { min-width: 34px; height: 32px; display: grid; place-items: center; border-radius: 8px; color: var(--muted); cursor: pointer; list-style: none; }
++    .header-menu summary:hover, .header-menu[open] summary { background: var(--soft); color: var(--ink); }
++    .header-menu .menu-popover { top: 36px; }
++    .conversation { min-height: 0; overflow: auto; padding: 28px 0 170px; scroll-behavior: smooth; }
++    .conversation-inner { width: min(820px, calc(100% - 56px)); margin: 0 auto; }
++    .welcome { min-height: 330px; display: grid; place-items: center; text-align: center; }
++    .welcome h1 { margin: 0 0 9px; color: var(--ink); font-size: 21px; font-weight: 720; }
++    .welcome p { max-width: 500px; margin: 0; color: var(--muted); line-height: 1.7; }
++    .message { padding: 16px 0; }
++    .message.user { display: flex; justify-content: flex-end; }
++    .user-bubble { max-width: min(620px, 82%); padding: 10px 14px; border-radius: 16px; background: var(--soft); color: #30322f; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
++    .message.agent { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 12px; }
++    .agent-mark { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 8px; background: var(--mint); color: #fff; font-size: 10px; font-weight: 800; }
++    .message-head { display: flex; align-items: center; gap: 8px; margin: 2px 0 7px; }
++    .message-head strong { font-size: 12px; }
++    .message-head span { color: var(--dim); font-size: 10px; }
++    .message-body { white-space: pre-wrap; overflow-wrap: anywhere; color: #30322f; line-height: 1.72; }
++    .message-attachments { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 5px; margin-bottom: 6px; }
++    .attachment-label { padding: 4px 8px; border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--muted); font-size: 10px; }
++    .run-indicator { margin: 12px 0 16px 42px; display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: 12px; }
++    .run-indicator button { border: 0; background: transparent; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
++    .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--mint); box-shadow: 0 0 0 4px var(--mint-soft); animation: breathe 1.5s ease-in-out infinite; }
++    @keyframes breathe { 50% { opacity: .42; transform: scale(.78); } }
++    .result-card, .error-card, .approval-card { margin: 12px 0 16px 42px; padding: 13px 14px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
++    .result-card { background: #fbfcfb; }
++    .error-card { border-color: #efd1d4; background: var(--red-soft); }
++    .approval-card { border-color: #ead8aa; background: var(--amber-soft); }
++    .card-title { margin: 0 0 5px; font-size: 12px; font-weight: 700; }
++    .card-copy { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
++    .card-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
++    .card-button { min-height: 31px; padding: 0 10px; border: 1px solid var(--line-strong); border-radius: 8px; background: #fff; color: var(--ink); font-size: 11px; }
++    .card-button:hover { background: var(--soft); }
++
++    .composer-wrap { position: absolute; left: 0; right: 0; bottom: 0; padding: 20px 24px 22px; background: linear-gradient(180deg, rgba(255,255,255,0), #fff 28px); }
++    .composer { width: min(820px, calc(100% - 8px)); margin: 0 auto; border: 1px solid #dadcd6; border-radius: 19px; background: #fff; box-shadow: 0 7px 24px rgba(30, 32, 29, .09); }
++    .composer:focus-within { border-color: #c7c9c3; box-shadow: 0 9px 28px rgba(30, 32, 29, .12); }
++    .composer textarea { width: 100%; min-height: 66px; max-height: 160px; resize: none; padding: 16px 16px 6px; border: 0; outline: 0; background: transparent; line-height: 1.55; }
++    .attachment-tray { display: flex; flex-wrap: wrap; gap: 6px; padding: 1px 12px 7px; }
++    .attachment-chip { display: inline-flex; align-items: center; gap: 6px; max-width: 220px; min-height: 28px; padding: 0 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--soft); color: var(--muted); font-size: 10px; }
++    .attachment-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
++    .attachment-chip button { padding: 0; border: 0; background: transparent; color: var(--dim); font-size: 10px; }
++    .composer-row { min-height: 46px; display: flex; align-items: center; gap: 6px; padding: 5px 8px 8px; }
++    .composer-control { position: relative; }
++    .composer-button { height: 32px; padding: 0 10px; border: 0; border-radius: 9px; background: transparent; color: #5f615c; font-size: 11px; white-space: nowrap; }
++    .composer-button:hover, .composer-button[aria-expanded="true"] { background: var(--soft); color: var(--ink); }
++    .composer-button:disabled { cursor: not-allowed; opacity: .42; }
++    .project-button { max-width: 185px; overflow: hidden; text-overflow: ellipsis; }
++    .model-effort-button { max-width: 210px; background: var(--soft); color: var(--ink); }
++    .voice-button.listening { background: var(--mint-soft); color: var(--mint-dark); }
++    .send-button { min-width: 58px; height: 34px; padding: 0 13px; border: 0; border-radius: 10px; background: #1b1c1a; color: #fff; font-size: 11px; font-weight: 700; }
++    .send-button.stop-state { background: var(--red); }
++    .send-button:disabled { cursor: not-allowed; opacity: .26; }
++    .control-popover {
++      position: absolute;
++      left: 0;
++      bottom: 40px;
++      z-index: 40;
++      width: 290px;
++      padding: 8px;
++      border: 1px solid var(--line);
++      border-radius: 13px;
++      background: #fff;
++      box-shadow: var(--shadow);
++    }
++    .control-popover.align-right { right: 0; left: auto; width: 324px; padding: 12px; }
++    .popover-title { padding: 3px 6px 7px; color: var(--dim); font-size: 10px; font-weight: 700; }
++    .popover-list { display: grid; gap: 2px; }
++    .popover-option { width: 100%; min-height: 40px; padding: 7px 9px; border: 0; border-radius: 9px; background: transparent; text-align: left; }
++    .popover-option:hover, .popover-option.selected { background: var(--soft); }
++    .option-title { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 650; }
++    .option-title .check { margin-left: auto; color: var(--mint-dark); }
++    .option-copy { margin-top: 3px; color: var(--dim); font-size: 10px; line-height: 1.45; }
++    .popover-divider { height: 1px; margin: 7px 3px; background: var(--line); }
++    .model-field label, .effort-field legend { display: block; margin: 0 0 7px; color: var(--muted); font-size: 11px; font-weight: 650; }
++    .model-field select { width: 100%; height: 39px; padding: 0 10px; border: 1px solid var(--line); border-radius: 9px; background: #fff; }
++    .effort-field { margin: 14px 0 0; padding: 0; border: 0; }
++    .effort-value { float: right; color: var(--mint-dark); font-weight: 700; }
++    .effort-field input[type="range"] { width: 100%; accent-color: var(--mint); }
++    .effort-scale { display: flex; justify-content: space-between; color: var(--dim); font-size: 9px; }
++    .popover-note { margin: 9px 2px 1px; color: var(--dim); font-size: 10px; line-height: 1.5; }
++
++    .activity { position: absolute; top: 56px; right: 0; bottom: 0; z-index: 25; width: 360px; display: grid; grid-template-rows: 50px minmax(0, 1fr); border-left: 1px solid var(--line); background: #fff; box-shadow: -12px 0 30px rgba(30, 32, 29, .08); }
++    .activity-head { display: flex; align-items: center; gap: 7px; padding: 0 13px; border-bottom: 1px solid var(--line); }
++    .activity-head small { color: var(--dim); }
++    .activity-head button { margin-left: auto; }
++    .activity-body { min-height: 0; overflow: auto; }
++    .activity-empty { padding: 28px 18px; color: var(--muted); font-size: 12px; line-height: 1.65; }
++    .log-item { padding: 11px 13px; border-bottom: 1px solid var(--line); }
++    .log-item strong { display: block; margin-bottom: 4px; font-size: 11px; }
++    .log-item p { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.55; overflow-wrap: anywhere; }
++    .log-time { float: right; color: var(--dim); font-weight: 400; }
++
++    .modal-backdrop { position: fixed; inset: 0; z-index: 60; display: none; place-items: center; padding: 22px; background: rgba(24, 27, 23, .32); }
++    .modal-backdrop.open { display: grid; }
++    .modal { width: min(470px, 100%); max-height: calc(100vh - 44px); overflow: auto; border: 1px solid var(--line); border-radius: 14px; background: #fff; box-shadow: var(--shadow); }
++    .modal header { display: flex; align-items: center; justify-content: space-between; padding: 15px 17px; border-bottom: 1px solid var(--line); }
++    .modal h2 { margin: 0; font-size: 16px; }
++    .modal-body { padding: 16px 17px; }
++    .modal-copy { margin: 0 0 13px; color: var(--muted); font-size: 12px; line-height: 1.65; }
++    .form-field { margin-bottom: 13px; }
++    .form-field label { display: block; margin-bottom: 5px; color: var(--muted); font-size: 11px; font-weight: 650; }
++    .form-field input { width: 100%; height: 40px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
++    .warning { padding: 12px; border: 1px solid #ecd3a4; border-radius: 9px; background: var(--amber-soft); color: #75561e; font-size: 11px; line-height: 1.65; }
++    .modal footer { display: flex; justify-content: flex-end; gap: 8px; padding: 11px 17px 15px; }
++    .btn { min-height: 36px; padding: 0 12px; border-radius: 8px; font-weight: 650; }
++    .btn.primary { border: 1px solid var(--mint); background: var(--mint); color: #fff; }
++    .btn.secondary { border: 1px solid var(--line); background: #fff; }
++    .btn.danger { border: 1px solid #e7b3b8; background: #fff; color: var(--red); }
++    .btn:disabled { cursor: not-allowed; opacity: .45; }
++    .toast { position: fixed; left: 50%; bottom: 24px; z-index: 80; padding: 9px 13px; border: 1px solid var(--line); border-radius: 9px; background: #fff; box-shadow: var(--shadow); font-size: 11px; font-weight: 650; transform: translate(-50%, 16px); opacity: 0; pointer-events: none; transition: 150ms; }
++    .toast.visible { transform: translate(-50%, 0); opacity: 1; }
++
++    @media (max-width: 1050px) {
++      .app { grid-template-columns: 238px minmax(0, 1fr); }
++      .conversation-inner { width: calc(100% - 40px); }
++      .conversation-path { display: none; }
++      .project-button { max-width: 125px; }
++      .composer-button { padding: 0 8px; }
++    }
++
++    /* Keep the CCB runtime powerful while making the everyday surface feel as
++       direct and quiet as a dedicated AI tool. */
++    :root {
++      --ink: #20211f;
++      --muted: #676963;
++      --dim: #9b9d97;
++      --line: #e9e9e5;
++      --line-strong: #d9dad5;
++      --sidebar: #f4f4f1;
++      --soft: #f5f5f2;
++      --active: #e8e8e4;
++      --mint: #20211f;
++      --mint-dark: #20211f;
++      --mint-soft: #eeeeea;
++      --shadow: 0 14px 42px rgba(24, 25, 23, .12);
++    }
++    button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, summary:focus-visible {
++      outline-color: rgba(32, 33, 31, .18);
++    }
++    .app { grid-template-columns: 234px minmax(0, 1fr); }
++    .sidebar { background: var(--sidebar); }
++    .sidebar-head { height: 52px; padding: 0 12px 0 15px; }
++    .brand-mark { display: none; }
++    .brand-name { font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
++    .text-button { min-height: 30px; padding: 0 8px; }
++    .new-chat {
++      height: 40px;
++      margin: 1px 7px 15px;
++      padding: 0 10px;
++      border-radius: 7px;
++      font-weight: 600;
++      justify-content: flex-start;
++      gap: 8px;
++    }
++    .new-chat .shortcut { margin-left: auto; opacity: .72; }
++    .sidebar-scroll { padding: 0 6px 18px; }
++    .section-head { height: 31px; padding: 0 9px; font-size: 10px; font-weight: 600; }
++    .compact-action { min-width: 27px; height: 27px; font-size: 11px; }
++    .project { margin-bottom: 2px; }
++    .item-shell { border-radius: 6px; }
++    .project-row { height: 32px; padding: 0 9px; display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; }
++    .project-row .icon { width: 14px; height: 14px; color: #767871; }
++    .session-row { min-height: 29px; padding: 4px 7px 4px 23px; font-size: 12px; }
++    .session-shell.active { background: #e2e2de; }
++    .sidebar-foot { min-height: 43px; padding: 7px 14px; border-top-color: transparent; }
++    .status-dot { width: 7px; height: 7px; }
++    .status-dot.ready { background: #3f9b65; }
++
++    .main { grid-template-rows: 44px minmax(0, 1fr); }
++    .main-head { padding: 0 16px; border-bottom-color: transparent; }
++    .conversation-title { font-size: 13px; font-weight: 650; }
++    .conversation-path { display: none; }
++    .header-menu summary { min-width: 32px; height: 30px; }
++    .conversation { padding: 38px 0 170px; }
++    .conversation-inner { width: min(640px, calc(100% - 48px)); }
++    .welcome { min-height: 300px; }
++    .welcome h1 { font-size: 22px; letter-spacing: -.02em; }
++    .welcome p { max-width: 460px; font-size: 13px; }
++    .message { padding: 12px 0; }
++    .user-bubble {
++      max-width: min(560px, 82%);
++      padding: 9px 13px;
++      border-radius: 15px;
++      background: #f3f3f0;
++    }
++    .message.agent { display: block; }
++    .agent-mark, .message.agent .message-head { display: none; }
++    .message-body { color: #292a27; line-height: 1.62; }
++    .run-indicator { margin: 9px 0 13px; }
++    .pulse { width: 7px; height: 7px; background: #696b65; box-shadow: 0 0 0 4px #efefeb; }
++    .result-card, .error-card, .approval-card {
++      margin: 11px 0 15px;
++      padding: 12px 13px;
++      border-radius: 10px;
++    }
++    .result-card {
++      width: fit-content;
++      display: flex;
++      align-items: center;
++      gap: 9px;
++      padding: 0;
++      border: 0;
++      background: transparent;
++    }
++    .result-card .card-title { margin: 0; color: var(--muted); font-size: 11px; font-weight: 600; }
++    .result-card .card-copy { margin: 0; color: var(--muted); font-size: 11px; }
++    .result-card .card-actions { margin: 0; }
++    .result-card .card-button {
++      min-height: auto;
++      padding: 0;
++      border: 0;
++      background: transparent;
++      color: var(--muted);
++      text-decoration: underline;
++      text-underline-offset: 3px;
++    }
++
++    .composer-wrap { padding: 14px 24px 8px; background: linear-gradient(180deg, rgba(255,255,255,0), #fff 28px); }
++    .composer {
++      width: min(640px, calc(100% - 8px));
++      border-color: #dedfda;
++      border-radius: 18px;
++      box-shadow: 0 5px 18px rgba(29, 30, 28, .08);
++    }
++    .composer:focus-within { border-color: #cfd0cb; box-shadow: 0 8px 24px rgba(29, 30, 28, .1); }
++    .composer textarea { min-height: 88px; padding: 15px 15px 5px; }
++    .composer-row { min-height: 44px; padding: 4px 7px 7px; }
++    .composer-button { height: 31px; padding: 0 8px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: 8px; color: #666862; }
++    .project-control { display: none; }
++    .model-effort-button { max-width: 210px; background: transparent; color: #31322f; }
++    .model-effort-button:hover, .model-effort-button[aria-expanded="true"] { background: var(--soft); }
++    .voice-button.listening { background: #ecece8; color: #20211f; }
++    .send-button { width: 32px; min-width: 32px; height: 32px; padding: 0; display: inline-grid; place-items: center; border-radius: 50%; background: #1f201e; }
++    .icon { width: 15px; height: 15px; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
++    .send-button .icon { width: 16px; height: 16px; }
++    .send-button .stop-icon { display: none; }
++    .send-button.stop-state .send-icon { display: none; }
++    .send-button.stop-state .stop-icon { display: block; }
++    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
++    .control-popover { border-radius: 12px; }
++    .popover-option { border-radius: 8px; }
++    .option-title .check, .effort-value { color: #20211f; }
++    .effort-field input[type="range"] { accent-color: #20211f; }
++
++    .activity { top: 44px; width: 340px; }
++    .modal { border-radius: 13px; }
++    .btn.primary { border-color: #20211f; background: #20211f; }
++
++    @media (max-width: 1050px) {
++      .app { grid-template-columns: 218px minmax(0, 1fr); }
++      .conversation-inner { width: calc(100% - 40px); max-width: 640px; }
++      .composer { max-width: 640px; }
++    }
+   </style>
+ </head>
+ <body>
++  <!-- Interface icons are from Lucide (ISC License). -->
+   <div class="app">
+-    <header class="topbar">
+-      <div class="brand"><div class="brand-mark">C</div><div><div class="brand-title">Claritide</div><div class="brand-sub">工作空间 · 本地 Agent</div></div></div>
+-      <nav class="nav" aria-label="主导航"><button data-return>我的今天</button><button data-return>团队工作</button><button data-return>日历会议</button><button data-return>日报</button><button class="active" aria-current="page">AI 工作台</button></nav>
+-      <div class="top-actions"><span class="runtime-pill" id="runtimeStatus">正在检查运行时</span><button class="plain" data-return>返回工作空间</button></div>
+-    </header>
+-    <main class="workspace" id="workspaceGrid">
+-      <aside class="sidebar" aria-label="项目与会话">
+-        <div class="sidebar-actions"><button class="btn primary" id="newProject">新建项目</button><button class="btn secondary" id="newSession" disabled>新建会话</button></div>
+-        <input class="search" id="search" type="search" placeholder="搜索项目或会话" aria-label="搜索项目或会话">
+-        <div class="project-scroll" id="projectList"><div class="section-label">我的项目</div><div class="empty-projects" id="projectEmpty">先创建项目并选择本地文件夹。<br>会话会保存在对应项目中。</div></div>
+-      </aside>
+-      <section class="center">
+-        <div class="session-toolbar"><div class="session-heading"><strong id="sessionHeading">AI 工作台</strong><div class="session-meta" id="sessionMeta">请选择项目并创建会话</div></div><div class="toolbar-controls"><select class="compact" id="topModel" aria-label="模型"><option>default</option></select><select class="compact" id="topPermission" aria-label="权限模式"><option value="controlled">受控访问</option><option value="readonly">只读访问</option><option value="full">完全访问</option></select><button class="plain" id="toggleActivity">运行记录</button></div></div>
+-        <div class="conversation" id="conversation"><div class="welcome" id="welcome"><div class="welcome-card"><div class="welcome-mark">AI</div><h1>从一个项目开始</h1><p>选择真实文件夹，创建项目，再把每次 Agent 对话放进项目中。模型、工作目录和权限都在会话开始前确认。</p></div></div></div>
+-        <div class="composer-area"><div class="composer"><textarea id="prompt" placeholder="描述要完成的任务；Enter 换行，Ctrl + Enter 发送" disabled></textarea><div class="composer-row"><small id="composerHint">尚未选择项目会话</small><span class="spacer"></span><button class="btn secondary" id="stop" disabled>停止</button><button class="btn primary" id="send" disabled>发送指令</button></div></div><div class="composer-settings"><div class="field"><label for="runLocation">运行位置</label><select id="runLocation" disabled><option>Local 当前目录</option></select></div><div class="field"><label for="bottomModel">模型</label><select id="bottomModel" disabled><option>default</option></select></div><div class="field"><label for="bottomPermission">权限模式</label><select id="bottomPermission" disabled><option value="controlled">受控访问</option><option value="readonly">只读访问</option><option value="full">完全访问</option></select></div></div></div>
++    <aside class="sidebar">
++      <header class="sidebar-head">
++        <div class="brand-mark" aria-hidden="true">C</div>
++        <div class="brand-name">Claritide</div>
++        <span class="spacer"></span>
++        <button class="text-button" id="returnWorkspace" type="button">
++          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 19-7-7 7-7"></path><path d="M19 12H5"></path></svg>
++          <span data-i18n="返回">返回</span>
++        </button>
++      </header>
++      <button class="new-chat" id="newSession" type="button">
++        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"></path></svg>
++        <span data-i18n="新对话">新对话</span>
++        <span class="shortcut">Ctrl N</span>
++      </button>
++      <div class="sidebar-scroll">
++        <div class="section-head">
++          <span data-i18n="项目">项目</span>
++          <button class="compact-action" id="newProject" type="button" data-i18n-title="新建项目" data-i18n-aria="新建项目">
++            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
++            <span class="sr-only" data-i18n="新建">新建</span>
++          </button>
++        </div>
++        <div id="projectList"></div>
++        <div class="empty-projects" id="projectEmpty" data-i18n="新建项目并选择本地文件夹，然后直接输入任务。">新建项目并选择本地文件夹，然后直接输入任务。</div>
++      </div>
++      <footer class="sidebar-foot">
++        <span class="status-dot" id="runtimeDot"></span>
++        <span id="runtimeStatus" data-i18n="正在检查运行时">正在检查运行时</span>
++      </footer>
++    </aside>
++
++    <main class="main">
++      <header class="main-head">
++        <div class="conversation-title" id="sessionHeading" data-i18n="新对话">新对话</div>
++        <div class="conversation-path" id="sessionMeta"></div>
++        <span class="spacer"></span>
++        <details class="header-menu" id="headerMenu">
++          <summary aria-label="更多操作" data-i18n-aria="更多操作">
++            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle></svg>
++          </summary>
++          <div class="menu-popover">
++            <button id="showActivity" type="button" data-i18n="运行详情">运行详情</button>
++            <button id="renameActiveSession" type="button" data-i18n="重命名对话">重命名对话</button>
++            <button class="danger" id="deleteActiveSession" type="button" data-i18n="删除对话">删除对话</button>
++          </div>
++        </details>
++      </header>
++
++      <section class="conversation" id="conversation">
++        <div class="conversation-inner" id="conversationInner"></div>
+       </section>
+-      <aside class="activity" id="activityPanel" aria-label="运行记录"><div class="activity-head"><strong>运行记录</strong><small id="eventCount">0 条</small><button class="plain" id="closeActivity">收起</button></div><div class="tabs"><button class="tab active" data-tab="events">事件</button><button class="tab" data-tab="changes">变更</button></div><div class="activity-body" id="eventsView"><div class="activity-empty" id="eventEmpty">Agent 的读取、分析、工具请求和完成状态会显示在这里。</div><div id="eventLog"></div></div><div class="activity-body" id="changesView" hidden><div class="activity-empty">当前安全运行时暂不提供文件变更明细。启用可审查的写入工具后，这里会展示 diff、测试结果与接受/撤销操作。</div></div></aside>
++
++      <div class="composer-wrap">
++        <div class="composer">
++          <textarea id="prompt" rows="2" placeholder="描述你想完成的任务" data-i18n-placeholder="描述你想完成的任务" disabled></textarea>
++          <div class="attachment-tray" id="attachmentTray" hidden></div>
++          <div class="composer-row">
++            <button class="composer-button" id="addContext" type="button" data-i18n-title="添加文本文件" data-i18n-aria="添加" disabled>
++              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
++              <span class="sr-only" data-i18n="添加">添加</span>
++            </button>
++            <input id="fileInput" type="file" multiple hidden accept=".txt,.md,.json,.jsonc,.yaml,.yml,.toml,.ini,.csv,.log,.js,.mjs,.cjs,.ts,.tsx,.jsx,.py,.rs,.go,.java,.c,.cc,.cpp,.h,.hpp,.css,.html,.xml,.sql,.sh,.ps1">
++
++            <div class="composer-control project-control">
++              <button class="composer-button project-button" id="projectButton" type="button" aria-expanded="false" aria-controls="projectPopover" data-i18n="选择项目">选择项目</button>
++              <div class="control-popover" id="projectPopover" hidden>
++                <div class="popover-title" data-i18n="选择项目">选择项目</div>
++                <div class="popover-list" id="projectOptions"></div>
++                <div class="popover-divider"></div>
++                <button class="popover-option" id="createProjectFromPopover" type="button">
++                  <span class="option-title" data-i18n="新建项目">新建项目</span>
++                  <span class="option-copy" data-i18n="选择一个本地文件夹">选择一个本地文件夹</span>
++                </button>
++              </div>
++            </div>
++
++            <div class="composer-control">
++              <button class="composer-button" id="permissionButton" type="button" aria-expanded="false" aria-controls="permissionPopover" disabled>
++                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="m9 12 2 2 4-4"></path></svg>
++                <span id="permissionLabel">请求批准</span>
++              </button>
++              <div class="control-popover" id="permissionPopover" hidden>
++                <div class="popover-title" data-i18n="权限">权限</div>
++                <div class="popover-list">
++                  <button class="popover-option" type="button" data-permission="controlled">
++                    <span class="option-title"><span data-i18n="请求批准">请求批准</span><span class="check"></span></span>
++                    <span class="option-copy" data-i18n="需要授权的操作会先询问你">需要授权的操作会先询问你</span>
++                  </button>
++                  <button class="popover-option" type="button" data-permission="readonly">
++                    <span class="option-title"><span data-i18n="只读访问">只读访问</span><span class="check"></span></span>
++                    <span class="option-copy" data-i18n="只允许读取和搜索项目">只允许读取和搜索项目</span>
++                  </button>
++                  <button class="popover-option" type="button" data-permission="full">
++                    <span class="option-title"><span data-i18n="完全访问">完全访问</span><span class="check"></span></span>
++                    <span class="option-copy" data-i18n="允许修改文件和执行命令">允许修改文件和执行命令</span>
++                  </button>
++                </div>
++              </div>
++            </div>
++
++            <span class="spacer"></span>
++
++            <div class="composer-control">
++              <button class="composer-button model-effort-button" id="modelEffortButton" type="button" aria-expanded="false" aria-controls="modelEffortPopover" disabled>
++                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14a1 1 0 0 1-.78-1.63l9-11a.5.5 0 0 1 .87.43l-1.7 6.8A1 1 0 0 0 12.36 10H20a1 1 0 0 1 .78 1.63l-9 11a.5.5 0 0 1-.87-.43l1.7-6.8A1 1 0 0 0 11.64 14z"></path></svg>
++                <span id="modelEffortLabel">默认 · 深度</span>
++                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
++              </button>
++              <div class="control-popover align-right" id="modelEffortPopover" hidden>
++                <div class="model-field">
++                  <label for="modelSelect" data-i18n="模型">模型</label>
++                  <select id="modelSelect"><option value="default">默认</option></select>
++                </div>
++                <fieldset class="effort-field">
++                  <legend><span data-i18n="思考深度">思考深度</span><span class="effort-value" id="effortValue">深度</span></legend>
++                  <input id="effortRange" type="range" min="0" max="4" step="1" value="2" aria-label="思考深度" data-i18n-aria="思考深度">
++                  <div class="effort-scale"><span data-i18n="更快">更快</span><span data-i18n="更深入">更深入</span></div>
++                </fieldset>
++                <p class="popover-note" data-i18n="复杂任务使用更高深度会更可靠，但耗时也会增加。">复杂任务使用更高深度会更可靠，但耗时也会增加。</p>
++              </div>
++            </div>
++
++            <button class="composer-button voice-button" id="voiceButton" type="button" data-i18n-title="语音输入" data-i18n-aria="语音" disabled>
++              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><path d="M12 19v3"></path></svg>
++              <span class="sr-only" id="voiceLabel" data-i18n="语音">语音</span>
++            </button>
++            <button class="send-button" id="send" type="button" data-i18n-aria="发送" disabled>
++              <svg class="icon send-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 7-7 7 7"></path><path d="M12 19V5"></path></svg>
++              <svg class="icon stop-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="8" height="8" x="8" y="8" rx="1"></rect></svg>
++              <span class="sr-only" id="sendLabel" data-i18n="发送">发送</span>
++            </button>
++          </div>
++        </div>
++      </div>
++
++      <aside class="activity" id="activityPanel" hidden>
++        <div class="activity-head">
++          <strong data-i18n="运行详情">运行详情</strong>
++          <small id="eventCount">0 条</small>
++          <button class="text-button" id="closeActivity" type="button" data-i18n="关闭">关闭</button>
++        </div>
++        <div class="activity-body">
++          <div class="activity-empty" id="eventEmpty" data-i18n="CCB 的读取、分析、工具调用和完成状态会显示在这里。">CCB 的读取、分析、工具调用和完成状态会显示在这里。</div>
++          <div id="eventLog"></div>
++        </div>
++      </aside>
+     </main>
+-    <footer class="statusbar"><span id="workspaceStatus">未绑定本地项目</span><span class="end" id="turnStatus">等待开始</span></footer>
+   </div>
+ 
+-  <div class="modal-backdrop" id="projectModal" role="dialog" aria-modal="true" aria-labelledby="projectTitle"><section class="modal"><header><h2 id="projectTitle">创建本地项目</h2><button class="plain" data-close="projectModal">关闭</button></header><div class="modal-body"><p class="modal-copy">项目绑定真实文件夹。Claritide 只把本次由系统文件选择器授权的目录交给本地 Agent。</p><div class="form-field"><label for="projectName">项目名称</label><input id="projectName" maxlength="80" placeholder="例如：Claritide 桌面端"></div><div class="form-field"><label>本地文件夹</label><input id="projectPath" readonly placeholder="尚未选择"></div><button class="btn secondary" id="chooseFolder">选择文件夹</button></div><footer><button class="btn secondary" data-close="projectModal">取消</button><button class="btn primary" id="createProject" disabled>创建项目</button></footer></section></div>
++  <div class="modal-backdrop" id="projectModal" role="dialog" aria-modal="true" aria-labelledby="projectTitle">
++    <section class="modal">
++      <header>
++        <h2 id="projectTitle" data-i18n="新建项目">新建项目</h2>
++        <button class="text-button" data-close="projectModal" type="button" data-i18n="关闭">关闭</button>
++      </header>
++      <div class="modal-body">
++        <p class="modal-copy" data-i18n="选择本地文件夹后即可直接输入任务，第一条消息会自动创建对话。">选择本地文件夹后即可直接输入任务，第一条消息会自动创建对话。</p>
++        <div class="form-field">
++          <label for="projectName" data-i18n="项目名称">项目名称</label>
++          <input id="projectName" maxlength="80" placeholder="选择文件夹后自动填写" data-i18n-placeholder="选择文件夹后自动填写">
++        </div>
++        <div class="form-field">
++          <label for="projectPath" data-i18n="本地文件夹">本地文件夹</label>
++          <input id="projectPath" readonly placeholder="尚未选择" data-i18n-placeholder="尚未选择">
++        </div>
++        <button class="btn secondary" id="chooseFolder" type="button" data-i18n="选择文件夹">选择文件夹</button>
++      </div>
++      <footer>
++        <button class="btn secondary" data-close="projectModal" type="button" data-i18n="取消">取消</button>
++        <button class="btn primary" id="createProject" type="button" data-i18n="创建并开始" disabled>创建并开始</button>
++      </footer>
++    </section>
++  </div>
+ 
+-  <div class="modal-backdrop" id="sessionModal" role="dialog" aria-modal="true" aria-labelledby="sessionTitle"><section class="modal"><header><h2 id="sessionTitle">在项目中创建会话</h2><button class="plain" data-close="sessionModal">关闭</button></header><div class="modal-body"><div class="form-field"><label for="sessionProject">项目</label><select id="sessionProject"></select></div><div class="form-field"><label for="sessionName">会话名称</label><input id="sessionName" maxlength="100" placeholder="例如：检查桌面端发布流程"></div><div class="form-field"><label for="sessionModel">模型</label><select id="sessionModel"><option>default</option></select></div><div class="form-field"><label for="sessionPermission">权限</label><select id="sessionPermission"><option value="controlled">受控访问</option><option value="readonly">只读访问</option><option value="full">完全访问</option></select></div></div><footer><button class="btn secondary" data-close="sessionModal">取消</button><button class="btn primary" id="createSession">创建并进入</button></footer></section></div>
++  <div class="modal-backdrop" id="fullAccessModal" role="alertdialog" aria-modal="true" aria-labelledby="fullAccessTitle">
++    <section class="modal">
++      <header>
++        <h2 id="fullAccessTitle" data-i18n="授予完全访问？">授予完全访问？</h2>
++        <button class="text-button" id="cancelFullAccessTop" type="button" data-i18n="关闭">关闭</button>
++      </header>
++      <div class="modal-body">
++        <div class="warning">
++          <strong data-i18n="这是高风险权限。">这是高风险权限。</strong><br>
++          <span data-i18n="Agent 可以读写或删除文件、执行命令、访问网络，并可能执行 Git Push 或发布操作。授权只对本次应用运行期间的当前对话有效。">Agent 可以读写或删除文件、执行命令、访问网络，并可能执行 Git Push 或发布操作。授权只对本次应用运行期间的当前对话有效。</span>
++        </div>
++      </div>
++      <footer>
++        <button class="btn secondary" id="cancelFullAccess" type="button" data-i18n="取消">取消</button>
++        <button class="btn danger" id="confirmFullAccess" type="button" data-i18n="仅本对话授权">仅本对话授权</button>
++      </footer>
++    </section>
++  </div>
+ 
+-  <div class="modal-backdrop" id="fullAccessModal" role="alertdialog" aria-modal="true" aria-labelledby="fullAccessTitle"><section class="modal"><header><h2 id="fullAccessTitle">授予完全访问？</h2><button class="plain" id="cancelFullAccessTop">关闭</button></header><div class="modal-body"><div class="warning"><strong>这是高风险权限。</strong><br>确认后会启用 CCB 的真实权限绕过模式。Agent 可以读写或删除文件（包括项目目录外）、执行命令、访问网络，并可能执行 Git Push 或发布操作。授权仅在本次应用运行期间对当前会话有效，重启应用后自动恢复为受控访问。请仅对可信项目启用。</div></div><footer><button class="btn secondary" id="cancelFullAccess">取消</button><button class="btn danger" id="confirmFullAccess">仅本会话授权</button></footer></section></div>
+   <div class="toast" id="toast" role="status" aria-live="polite"></div>
+ 
+   <script>
+-    (function(){
++    (function () {
+       'use strict';
+-      var WORKSPACE_URL='https://watch.sding.me/';
+-      var STORAGE_KEY='claritide.agent.projects.v1';
+-      var bridge=window.__CLARITIDE_CCB__;
+-      var locale=new URLSearchParams(window.location.search).get('locale')==='en'?'en':'zh-CN';
+-      var english=locale==='en';
+-      var EN={
+-        '工作空间 · 本地 Agent':'Workspace · Local Agent','主导航':'Main navigation','我的今天':'My Day','团队工作':'Team Work','日历会议':'Calendar','日报':'Reports','AI 工作台':'AI Workbench','正在检查运行时':'Checking runtime','返回工作空间':'Back to workspace','项目与会话':'Projects and sessions','新建项目':'New project','新建会话':'New session','搜索项目或会话':'Search projects or sessions','我的项目':'My projects','先创建项目并选择本地文件夹。':'Create a project and select a local folder first.','会话会保存在对应项目中。':'Sessions are saved in their project.','请选择项目并创建会话':'Select a project and create a session','模型':'Model','权限模式':'Permission mode','受控访问':'Controlled','只读访问':'Read only','完全访问':'Full access','运行记录':'Activity','从一个项目开始':'Start with a project','选择真实文件夹，创建项目，再把每次 Agent 对话放进项目中。模型、工作目录和权限都在会话开始前确认。':'Select a real folder, create a project, and keep each Agent conversation inside it. Confirm the model, working directory, and permissions before the session starts.','描述要完成的任务；Enter 换行，Ctrl + Enter 发送':'Describe the task; Enter for a new line, Ctrl + Enter to send','尚未选择项目会话':'No project session selected','停止':'Stop','发送指令':'Send','运行位置':'Run location','Local 当前目录':'Local current directory','0 条':'0 items','收起':'Collapse','事件':'Events','变更':'Changes','Agent 的读取、分析、工具请求和完成状态会显示在这里。':'Agent reads, analysis, tool requests, and completion status appear here.','当前安全运行时暂不提供文件变更明细。启用可审查的写入工具后，这里会展示 diff、测试结果与接受/撤销操作。':'The current secure runtime does not expose file-change details yet. Once reviewable write tools are enabled, this area will show diffs, test results, and accept/revert actions.','未绑定本地项目':'No local project linked','等待开始':'Ready','创建本地项目':'Create local project','关闭':'Close','项目绑定真实文件夹。Claritide 只把本次由系统文件选择器授权的目录交给本地 Agent。':'A project links to a real folder. Claritide only gives the local Agent access to the directory authorized through the system folder picker.','项目名称':'Project name','例如：Claritide 桌面端':'Example: Claritide desktop','本地文件夹':'Local folder','尚未选择':'Not selected','选择文件夹':'Choose folder','取消':'Cancel','创建项目':'Create project','在项目中创建会话':'Create session in project','项目':'Project','会话名称':'Session name','例如：检查桌面端发布流程':'Example: Review desktop release flow','权限':'Permission','创建并进入':'Create and open','授予完全访问？':'Grant full access?','这是高风险权限。':'This is a high-risk permission.','确认后会启用 CCB 的真实权限绕过模式。Agent 可以读写或删除文件（包括项目目录外）、执行命令、访问网络，并可能执行 Git Push 或发布操作。授权仅在本次应用运行期间对当前会话有效，重启应用后自动恢复为受控访问。请仅对可信项目启用。':'This enables CCB permission bypass. The Agent may read, write, or delete files (including outside the project), run commands, access the network, and may perform Git Push or release operations. Access applies only to this session during the current app run and returns to Controlled after restart. Enable it only for trusted projects.','仅本会话授权':'Allow for this session','展开':'Expand','运行时未配置':'Runtime not configured','Ctrl + Enter 发送':'Ctrl + Enter to send','Agent 正在执行':'Agent is running','会话已就绪':'Session ready','我':'Me','条':'items','开始任务':'Task started','错误':'Error','本地桥接不可用':'Local bridge unavailable','新项目':'New project','运行时检查失败':'Runtime check failed','请先停止当前执行':'Stop the current run first','项目已创建，请创建第一个会话':'Project created. Create the first session.','请先创建或选择项目':'Create or select a project first','请选择项目并填写会话名称':'Select a project and enter a session name','会话已创建，完全访问已启用':'Session created. Full access enabled.','会话已创建':'Session created','权限模式已更新':'Permission mode updated','已为本会话启用完全访问':'Full access enabled for this session','未选择项目会话':'No project session selected','完全访问需要在本次应用运行期间重新确认':'Full access must be confirmed again during this app run','需要重新授权项目文件夹':'The project folder must be authorized again','已发送停止请求':'Stop request sent'
+-      };
+-      var state={projects:[],activeProjectId:'',activeSessionId:'',nativeSessionId:'',turnActive:false,status:null,pendingWorkspace:null,pendingFullAccess:null,fullAccessGrants:{}};
+-      var $=function(selector,root){return (root||document).querySelector(selector)};
+-      var $$=function(selector,root){return Array.prototype.slice.call((root||document).querySelectorAll(selector))};
++
++      var WORKSPACE_URL = 'https://watch.sding.me/admin/my-day/?desktop=1';
++      var STORAGE_KEY = 'claritide.agent.projects.v2';
++      var LEGACY_STORAGE_KEY = 'claritide.agent.projects.v1';
++      var FILE_LIMIT_BYTES = 512 * 1024;
++      var TOTAL_FILE_LIMIT_BYTES = 1024 * 1024;
++      var EFFORT_LEVELS = ['low', 'medium', 'high', 'xhigh', 'max'];
++      var locale = new URLSearchParams(window.location.search).get('locale') === 'en' ? 'en' : 'zh-CN';
++      var english = locale === 'en';
++      var bridge = window.__CLARITIDE_CCB__;
++      var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
++      var recognition = null;
+       var toastTimer;
+ 
+-      document.documentElement.lang=locale;
+-      document.title=english?'Claritide · AI Workbench':'Claritide · AI 工作台';
+-      function tr(value){value=String(value==null?'':value);return english&&(EN[value]||EN[value.trim()])||value}
+-      function translateMessage(value){
+-        value=String(value==null?'':value);if(!english)return value;
+-        var prefixes={'选择文件夹失败：':'Failed to choose folder: ','发送失败：':'Failed to send: ','停止失败：':'Failed to stop: '};
+-        for(var prefix in prefixes){if(value.indexOf(prefix)===0)return prefixes[prefix]+value.slice(prefix.length)}
+-        return tr(value)
+-      }
+-      function translateTree(root){
+-        if(!english||!root)return;
+-        if(root.nodeType===3){var raw=root.nodeValue||'',trimmed=raw.trim();if(EN[trimmed])root.nodeValue=raw.replace(trimmed,EN[trimmed]);return}
+-        if(root.nodeType!==1)return;
+-        ['placeholder','aria-label','title'].forEach(function(name){var value=root.getAttribute&&root.getAttribute(name);if(value&&EN[value])root.setAttribute(name,EN[value])});
+-        Array.prototype.slice.call(root.childNodes||[]).forEach(translateTree)
+-      }
+-
+-      function uid(prefix){return prefix+'-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8)}
+-      function safeText(value){return String(value==null?'':value)}
+-      function showToast(message){var node=$('#toast');node.textContent=translateMessage(message);node.classList.add('visible');window.clearTimeout(toastTimer);toastTimer=window.setTimeout(function(){node.classList.remove('visible')},2200)}
+-      function openModal(id){$('#'+id).classList.add('open')}
+-      function closeModal(id){$('#'+id).classList.remove('open')}
+-      function load(){try{var parsed=JSON.parse(window.localStorage.getItem(STORAGE_KEY)||'[]');state.projects=Array.isArray(parsed)?parsed:[];state.projects.forEach(function(project){(project.sessions||[]).forEach(function(session){if(session.permission==='full')session.permission='controlled'})})}catch(_error){state.projects=[]}}
+-      function save(){window.localStorage.setItem(STORAGE_KEY,JSON.stringify(state.projects.map(function(project){return{id:project.id,name:project.name,path:project.path,sessions:project.sessions||[]}})))}
+-      function activeProject(){return state.projects.find(function(project){return project.id===state.activeProjectId})||null}
+-      function activeSession(){var project=activeProject();return project&&(project.sessions||[]).find(function(session){return session.id===state.activeSessionId})||null}
+-      function formatTime(value){try{return new Date(value).toLocaleTimeString(locale,{hour:'2-digit',minute:'2-digit'})}catch(_error){return''}}
+-
+-      function renderProjects(){
+-        var host=$('#projectList');$$('.project',host).forEach(function(node){node.remove()});
+-        $('#projectEmpty').hidden=state.projects.length>0;
+-        var query=$('#search').value.trim().toLowerCase();
+-        state.projects.forEach(function(project){
+-          var searchable=(project.name+' '+project.path+' '+(project.sessions||[]).map(function(item){return item.name}).join(' ')).toLowerCase();
+-          if(query&&searchable.indexOf(query)<0)return;
+-          var section=document.createElement('section');section.className='project';
+-          var row=document.createElement('button');row.className='project-row'+(project.id===state.activeProjectId?' active':'');row.type='button';
+-          var dot=document.createElement('span');dot.className='project-dot';var copy=document.createElement('span');var name=document.createElement('span');name.className='project-name';name.textContent=project.name;var path=document.createElement('span');path.className='project-path';path.textContent=project.path;copy.appendChild(name);copy.appendChild(path);var arrow=document.createElement('span');arrow.className='chevron';arrow.textContent=tr(project.id===state.activeProjectId?'收起':'展开');row.appendChild(dot);row.appendChild(copy);row.appendChild(arrow);
+-          row.addEventListener('click',function(){state.activeProjectId=project.id;state.activeSessionId='';renderProjects();syncControls()});section.appendChild(row);
+-          if(project.id===state.activeProjectId){var list=document.createElement('div');list.className='session-list';(project.sessions||[]).forEach(function(session){var button=document.createElement('button');button.className='session-row'+(session.id===state.activeSessionId?' active':'');button.type='button';var title=document.createElement('span');title.className='session-title';title.textContent=session.name;var time=document.createElement('span');time.className='session-time';time.textContent=formatTime(session.updatedAt);button.appendChild(title);button.appendChild(time);button.addEventListener('click',function(event){event.stopPropagation();selectSession(project.id,session.id)});list.appendChild(button)});section.appendChild(list)}
+-          host.appendChild(section)
+-        });
+-        refreshProjectSelect();
+-      }
+-
+-      function refreshProjectSelect(){var select=$('#sessionProject');select.textContent='';state.projects.forEach(function(project){var option=document.createElement('option');option.value=project.id;option.textContent=project.name;select.appendChild(option)});if(state.activeProjectId)select.value=state.activeProjectId}
+-      function fillModels(models){['#topModel','#bottomModel','#sessionModel'].forEach(function(selector){var select=$(selector),current=select.value;select.textContent='';(models.length?models:['default']).forEach(function(model){var option=document.createElement('option');option.value=model;option.textContent=model;select.appendChild(option)});if(models.indexOf(current)>=0)select.value=current})}
+-      function syncControls(){
+-        var project=activeProject(),session=activeSession(),ready=Boolean(project&&session),runtimeReady=Boolean(state.status&&state.status.available);
+-        $('#newSession').disabled=!project;$('#prompt').disabled=!ready||!runtimeReady;$('#send').disabled=!ready||!runtimeReady||state.turnActive;$('#stop').disabled=!state.turnActive;$('#runLocation').disabled=!ready;$('#bottomModel').disabled=!ready||state.nativeSessionId;$('#bottomPermission').disabled=!ready||state.nativeSessionId;
+-        $('#sessionHeading').textContent=session?project.name+' / '+session.name:tr('AI 工作台');$('#sessionMeta').textContent=session?project.path:tr('请选择项目并创建会话');$('#composerHint').textContent=tr(!runtimeReady?'运行时未配置':ready?'Ctrl + Enter 发送':'尚未选择项目会话');$('#workspaceStatus').textContent=project?project.path:tr('未绑定本地项目');$('#turnStatus').textContent=tr(state.turnActive?'Agent 正在执行':state.nativeSessionId?'会话已就绪':'等待开始');
+-        if(session){$('#topModel').value=session.model;$('#bottomModel').value=session.model;$('#topPermission').value=session.permission;$('#bottomPermission').value=session.permission}
+-      }
+-
+-      function clearConversation(){var host=$('#conversation');host.textContent=''}
+-      function renderConversation(){var session=activeSession();clearConversation();if(!session){var welcome=document.createElement('div');welcome.className='welcome';welcome.innerHTML='<div class="welcome-card"><div class="welcome-mark">AI</div><h1>从一个项目开始</h1><p>选择真实文件夹，创建项目，再把每次 Agent 对话放进项目中。模型、工作目录和权限都在会话开始前确认。</p></div>';$('#conversation').appendChild(welcome);return}(session.messages||[]).forEach(function(message){appendMessage(message.role,message.text,message.time,false)});$('#conversation').scrollTop=$('#conversation').scrollHeight}
+-      function appendMessage(role,text,time,persist){var article=document.createElement('article');article.className='message '+(role==='user'?'user':'agent');var avatar=document.createElement('div');avatar.className='avatar';avatar.textContent=role==='user'?tr('我'):'AI';var content=document.createElement('div');var head=document.createElement('div');head.className='message-head';var author=document.createElement('strong');author.textContent=role==='user'?tr('我'):'Claritide Agent';var stamp=document.createElement('span');stamp.textContent=formatTime(time||Date.now());head.appendChild(author);head.appendChild(stamp);var body=document.createElement('div');body.className='message-body';body.textContent=safeText(text);content.appendChild(head);content.appendChild(body);article.appendChild(avatar);article.appendChild(content);$('#conversation').appendChild(article);if(persist){var session=activeSession();session.messages=session.messages||[];session.messages.push({role:role,text:safeText(text),time:time||Date.now()});session.updatedAt=Date.now();save()}return body}
+-      function addEvent(kind,detail){$('#eventEmpty').hidden=true;var item=document.createElement('div');item.className='log-item';var title=document.createElement('strong');title.textContent=tr(kind);var copy=document.createElement('p');copy.textContent=safeText(detail);item.appendChild(title);item.appendChild(copy);$('#eventLog').appendChild(item);var count=$$('#eventLog .log-item').length;$('#eventCount').textContent=count+' '+tr('条');$('#eventsView').scrollTop=$('#eventsView').scrollHeight}
+-
+-      function selectSession(projectId,sessionId){if(state.turnActive){showToast('请先停止当前执行');return}state.activeProjectId=projectId;state.activeSessionId=sessionId;state.nativeSessionId='';renderProjects();renderConversation();syncControls()}
+-      async function chooseWorkspace(){if(!bridge)return showToast('本地桥接不可用');try{var workspace=await bridge.selectWorkspace();if(!workspace)return;state.pendingWorkspace=workspace;$('#projectPath').value=workspace.path||workspace.name||'';if(!$('#projectName').value)$('#projectName').value=workspace.name||'新项目';$('#createProject').disabled=false}catch(error){showToast('选择文件夹失败：'+safeText(error&&error.message||error))}}
+-      function createProject(){var workspace=state.pendingWorkspace,name=$('#projectName').value.trim();if(!workspace||!name)return;var project={id:uid('project'),name:name,path:workspace.path,nativeWorkspace:workspace,sessions:[]};state.projects.unshift(project);state.activeProjectId=project.id;state.activeSessionId='';save();closeModal('projectModal');renderProjects();syncControls();openSessionModal();showToast('项目已创建，请创建第一个会话')}
+-      function openSessionModal(){var project=activeProject();if(!project)return showToast('请先创建或选择项目');refreshProjectSelect();$('#sessionProject').value=project.id;$('#sessionName').value='';$('#sessionModel').value=$('#topModel').value||'default';$('#sessionPermission').value='controlled';openModal('sessionModal');$('#sessionName').focus()}
+-      function commitSession(permission){var projectId=$('#sessionProject').value,project=state.projects.find(function(item){return item.id===projectId}),name=$('#sessionName').value.trim();if(!project||!name)return showToast('请选择项目并填写会话名称');var session={id:uid('session'),name:name,model:$('#sessionModel').value||'default',permission:permission,updatedAt:Date.now(),messages:[]};project.sessions=project.sessions||[];project.sessions.unshift(session);state.activeProjectId=project.id;state.activeSessionId=session.id;state.nativeSessionId='';if(permission==='full')state.fullAccessGrants[session.id]=true;save();closeModal('sessionModal');renderProjects();renderConversation();syncControls();showToast(permission==='full'?'会话已创建，完全访问已启用':'会话已创建')}
+-      function createSession(){var projectId=$('#sessionProject').value,project=state.projects.find(function(item){return item.id===projectId}),name=$('#sessionName').value.trim();if(!project||!name)return showToast('请选择项目并填写会话名称');var permission=$('#sessionPermission').value;if(permission==='full'){state.pendingFullAccess={kind:'create'};openModal('fullAccessModal');return}commitSession(permission)}
+-      function setPermission(value){var session=activeSession();if(!session)return;if(value==='full'){state.pendingFullAccess={kind:'update',sessionId:session.id};openModal('fullAccessModal');return}session.permission=value;delete state.fullAccessGrants[session.id];save();$('#topPermission').value=value;$('#bottomPermission').value=value;showToast('权限模式已更新')}
+-      function cancelFullAccess(){state.pendingFullAccess=null;closeModal('fullAccessModal');syncControls()}
+-      function confirmFullAccess(){var pending=state.pendingFullAccess;state.pendingFullAccess=null;closeModal('fullAccessModal');if(!pending)return syncControls();if(pending.kind==='create'){commitSession('full');return}var session=activeSession();if(!session||session.id!==pending.sessionId)return syncControls();session.permission='full';state.fullAccessGrants[session.id]=true;save();syncControls();showToast('已为本会话启用完全访问')}
+-
+-      async function ensureNativeSession(){if(state.nativeSessionId)return state.nativeSessionId;var project=activeProject(),session=activeSession();if(!project||!session)throw new Error(tr('未选择项目会话'));if(session.permission==='full'&&!state.fullAccessGrants[session.id])throw new Error(tr('完全访问需要在本次应用运行期间重新确认'));if(!project.nativeWorkspace){var workspace=await bridge.selectWorkspace();if(!workspace)throw new Error(tr('需要重新授权项目文件夹'));project.nativeWorkspace=workspace;project.path=workspace.path||project.path;save();renderProjects()}var id=crypto.randomUUID();await bridge.startSession({clientSessionId:id,workspace:project.nativeWorkspace.id,model:session.model,permission:session.permission,locale:locale});state.nativeSessionId=id;syncControls();return id}
+-      async function send(){var value=$('#prompt').value.trim();if(!value||state.turnActive)return;try{var id=await ensureNativeSession();appendMessage('user',value,Date.now(),true);$('#prompt').value='';state.turnActive=true;syncControls();addEvent('开始任务',value);await bridge.send({sessionId:id,content:value})}catch(error){state.turnActive=false;syncControls();showToast('发送失败：'+safeText(error&&error.message||error));addEvent('错误',safeText(error&&error.message||error))}}
+-      async function stop(){if(!state.nativeSessionId||!state.turnActive)return;try{await bridge.stop({sessionId:state.nativeSessionId});showToast('已发送停止请求')}catch(error){showToast('停止失败：'+safeText(error&&error.message||error))}}
+-      async function returnToWorkspace(){if(state.nativeSessionId){try{await bridge.close({sessionId:state.nativeSessionId})}catch(_error){}}window.location.assign(WORKSPACE_URL)}
+-
+-      function handleEvent(event){if(state.nativeSessionId&&event.sessionId&&event.sessionId!==state.nativeSessionId)return;var payload=event.payload||{};if(event.type==='text_delta'){var last=$('#conversation .message.agent:last-child .message-body');if(!last){last=appendMessage('agent','',Date.now(),false)}last.textContent=safeText(last.textContent)+safeText(payload.text)}else if(event.type==='assistant_final'){var lastFinal=$('#conversation .message.agent:last-child .message-body');if(!lastFinal)lastFinal=appendMessage('agent','',Date.now(),false);lastFinal.textContent=safeText(payload.text||lastFinal.textContent);var session=activeSession();if(session){session.messages=session.messages||[];session.messages.push({role:'agent',text:lastFinal.textContent,time:Date.now()});session.updatedAt=Date.now();save()}}else if(event.type==='turn_completed'||(event.type==='error'&&payload.terminal===true)){state.turnActive=false;syncControls()}else if(event.type==='stopped'){state.turnActive=Boolean(payload.settling);syncControls()}var detail=payload.message||payload.text||payload.toolName||payload.code||event.type;addEvent(event.type,detail);$('#conversation').scrollTop=$('#conversation').scrollHeight}
+-
+-      function bind(){
+-        $('#newProject').addEventListener('click',function(){state.pendingWorkspace=null;$('#projectName').value='';$('#projectPath').value='';$('#createProject').disabled=true;openModal('projectModal')});$('#chooseFolder').addEventListener('click',chooseWorkspace);$('#createProject').addEventListener('click',createProject);$('#newSession').addEventListener('click',openSessionModal);$('#createSession').addEventListener('click',createSession);$('#search').addEventListener('input',renderProjects);$('#send').addEventListener('click',send);$('#stop').addEventListener('click',stop);$('#prompt').addEventListener('keydown',function(event){if(event.ctrlKey&&event.key==='Enter'){event.preventDefault();void send()}});
+-        $('#topModel').addEventListener('change',function(event){var session=activeSession();if(session&&!state.nativeSessionId){session.model=event.target.value;$('#bottomModel').value=event.target.value;save()}});$('#bottomModel').addEventListener('change',function(event){$('#topModel').value=event.target.value;$('#topModel').dispatchEvent(new Event('change'))});$('#topPermission').addEventListener('change',function(event){setPermission(event.target.value)});$('#bottomPermission').addEventListener('change',function(event){setPermission(event.target.value)});
+-        $('#cancelFullAccess').addEventListener('click',cancelFullAccess);$('#cancelFullAccessTop').addEventListener('click',cancelFullAccess);$('#confirmFullAccess').addEventListener('click',confirmFullAccess);$$('[data-close]').forEach(function(button){button.addEventListener('click',function(){closeModal(button.getAttribute('data-close'))})});$$('.modal-backdrop').forEach(function(backdrop){backdrop.addEventListener('click',function(event){if(event.target===backdrop){if(backdrop.id==='fullAccessModal')cancelFullAccess();else closeModal(backdrop.id)}})});$$('[data-return]').forEach(function(button){button.addEventListener('click',returnToWorkspace)});
+-        $('#closeActivity').addEventListener('click',function(){$('#activityPanel').classList.add('closed');$('#workspaceGrid').style.gridTemplateColumns='294px minmax(480px,1fr)'});$('#toggleActivity').addEventListener('click',function(){var panel=$('#activityPanel');panel.classList.toggle('closed');$('#workspaceGrid').style.gridTemplateColumns=panel.classList.contains('closed')?'294px minmax(480px,1fr)':''});$$('[data-tab]').forEach(function(button){button.addEventListener('click',function(){$$('[data-tab]').forEach(function(item){item.classList.toggle('active',item===button)});$('#eventsView').hidden=button.getAttribute('data-tab')!=='events';$('#changesView').hidden=button.getAttribute('data-tab')!=='changes'})})
+-      }
+-
+-      async function init(){
+-        translateTree(document.body);
+-        if(english&&window.MutationObserver){new MutationObserver(function(records){records.forEach(function(record){Array.prototype.slice.call(record.addedNodes||[]).forEach(translateTree)})}).observe(document.body,{childList:true,subtree:true})}
+-        load();bind();renderProjects();renderConversation();
+-        if(!bridge){$('#runtimeStatus').textContent=tr('本地桥接不可用');syncControls();return}
++      var EN = {
++        '返回': 'Back',
++        '新对话': 'New chat',
++        '项目': 'Projects',
++        '新建': 'New',
++        '新建项目': 'New project',
++        '新建项目并选择本地文件夹，然后直接输入任务。': 'Create a project, choose a local folder, and start typing.',
++        '正在检查运行时': 'Checking runtime',
++        '更多操作': 'More actions',
++        '更多': 'More',
++        '运行详情': 'Activity',
++        '重命名对话': 'Rename chat',
++        '重命名': 'Rename',
++        '删除项目': 'Remove project',
++        '删除对话': 'Delete chat',
++        '描述你想完成的任务': 'Describe what you want to accomplish',
++        '添加': 'Add',
++        '添加文本文件': 'Add text files',
++        '选择项目': 'Choose project',
++        '选择一个本地文件夹': 'Choose a local folder',
++        '权限': 'Permissions',
++        '请求批准': 'Ask approval',
++        '只读访问': 'Read only',
++        '完全访问': 'Full access',
++        '需要授权的操作会先询问你': 'Ask before operations that require approval',
++        '只允许读取和搜索项目': 'Only read and search the project',
++        '允许修改文件和执行命令': 'Allow file changes and commands',
++        '模型': 'Model',
++        '思考深度': 'Thinking depth',
++        '更快': 'Faster',
++        '更深入': 'Deeper',
++        '复杂任务使用更高深度会更可靠，但耗时也会增加。': 'Deeper thinking is more reliable for complex tasks, but takes longer.',
++        '语音': 'Voice',
++        '语音输入': 'Voice input',
++        '发送': 'Send',
++        '停止': 'Stop',
++        '关闭': 'Close',
++        'CCB 的读取、分析、工具调用和完成状态会显示在这里。': 'CCB reading, analysis, tool calls, and completion status appear here.',
++        '选择本地文件夹后即可直接输入任务，第一条消息会自动创建对话。': 'Choose a local folder and start typing. The first message creates the chat automatically.',
++        '项目名称': 'Project name',
++        '选择文件夹后自动填写': 'Filled after choosing a folder',
++        '本地文件夹': 'Local folder',
++        '尚未选择': 'Not selected',
++        '选择文件夹': 'Choose folder',
++        '取消': 'Cancel',
++        '创建并开始': 'Create and start',
++        '授予完全访问？': 'Grant full access?',
++        '这是高风险权限。': 'This is a high-risk permission.',
++        'Agent 可以读写或删除文件、执行命令、访问网络，并可能执行 Git Push 或发布操作。授权只对本次应用运行期间的当前对话有效。': 'The Agent can read, write, or delete files, run commands, access the network, and may push or publish. This grant applies only to the current chat during this app run.',
++        '仅本对话授权': 'Allow for this chat',
++        '默认': 'Default',
++        '当前': 'Current',
++        '快速': 'Quick',
++        '标准': 'Balanced',
++        '深度': 'Deep',
++        '极高': 'Very deep',
++        '最大': 'Maximum',
++        '选择一个项目后即可开始': 'Choose a project to get started',
++        '新建项目后可以直接输入任务，第一条消息会自动创建对话。': 'After creating a project, type your task. The first message creates the chat automatically.',
++        '想完成什么？': 'What would you like to accomplish?',
++        '直接输入任务，CCB 会自行读取、分析、修改并验证。': 'Describe the task. CCB will read, analyze, change, and verify as needed.',
++        '项目已创建，可以直接输入任务': 'Project created. You can start typing.',
++        '新对话已准备好': 'A new chat is ready.',
++        '项目已删除，本地文件夹和文件没有被删除': 'Project removed. Local files were not deleted.',
++        '对话已删除': 'Chat deleted.',
++        '项目已重命名': 'Project renamed.',
++        '对话已重命名': 'Chat renamed.',
++        '权限模式已更新': 'Permission updated.',
++        '已为本对话启用完全访问': 'Full access enabled for this chat.',
++        '已发送停止请求': 'Stop request sent.',
++        '请先停止当前执行': 'Stop the current task first.',
++        '本地桥接不可用': 'Native bridge unavailable',
++        'Agent 已就绪': 'Agent ready',
++        '运行时未配置': 'Runtime unavailable',
++        '运行时检查失败': 'Runtime check failed',
++        '正在启动 Agent': 'Starting Agent',
++        '正在处理任务': 'Working on the task',
++        '正在读取项目': 'Reading the project',
++        '正在搜索代码': 'Searching the code',
++        '正在修改文件': 'Changing files',
++        '正在执行命令': 'Running a command',
++        '正在搜索网页': 'Searching the web',
++        '正在分派任务': 'Delegating work',
++        '任务已完成': 'Task completed',
++        '查看详情': 'View details',
++        '重试': 'Retry',
++        '调整权限': 'Adjust permissions',
++        '启动失败': 'Could not start',
++        '任务失败': 'Task failed',
++        '当前受控模式需要工具审批，但审批桥接尚未启用。请新建对话并选择只读或完全访问。': 'This operation needs tool approval, but the approval bridge is not enabled yet. Start a new chat and choose read-only or full access.',
++        '文件过大': 'File is too large',
++        '附件总大小不能超过 1 MB': 'Attachments cannot exceed 1 MB in total',
++        '仅支持文本文件': 'Only text files are supported',
++        '已添加文件': 'File added',
++        '当前系统不支持语音输入': 'Voice input is unavailable on this system',
++        '语音识别失败': 'Voice recognition failed',
++        '正在聆听': 'Listening',
++        '条': 'items',
++        '会话运行后请新建对话再切换模型、思考深度或权限。': 'Start a new chat to change model, thinking depth, or permissions after a session begins.'
++      };
++
++      var state = {
++        projects: [],
++        activeProjectId: '',
++        activeSessionId: '',
++        nativeSessionId: '',
++        turnActive: false,
++        starting: false,
++        status: null,
++        pendingWorkspace: null,
++        pendingFullAccess: null,
++        fullAccessGrants: {},
++        attachments: [],
++        draftModel: 'default',
++        draftEffort: 'high',
++        draftPermission: 'controlled',
++        lastSubmittedText: '',
++        voiceActive: false
++      };
++
++      var $ = function (selector, root) { return (root || document).querySelector(selector); };
++      var $$ = function (selector, root) { return Array.prototype.slice.call((root || document).querySelectorAll(selector)); };
++
++      function createLucideIcon(name) {
++        var namespace = 'http://www.w3.org/2000/svg';
++        var svg = document.createElementNS(namespace, 'svg');
++        svg.setAttribute('class', 'icon');
++        svg.setAttribute('viewBox', '0 0 24 24');
++        svg.setAttribute('aria-hidden', 'true');
++        if (name === 'folder') {
++          var folder = document.createElementNS(namespace, 'path');
++          folder.setAttribute('d', 'M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z');
++          svg.appendChild(folder);
++        } else {
++          [5, 12, 19].forEach(function (value) {
++            var dot = document.createElementNS(namespace, 'circle');
++            dot.setAttribute('cx', String(value));
++            dot.setAttribute('cy', '12');
++            dot.setAttribute('r', '1');
++            svg.appendChild(dot);
++          });
++        }
++        return svg;
++      }
++
++      document.documentElement.lang = locale;
++      document.title = english ? 'Claritide · AI Workbench' : 'Claritide · AI 工作台';
++
++      function tr(value) {
++        value = String(value == null ? '' : value);
++        return english && EN[value] ? EN[value] : value;
++      }
++
++      function applyTranslations() {
++        $$('[data-i18n]').forEach(function (node) { node.textContent = tr(node.getAttribute('data-i18n')); });
++        $$('[data-i18n-placeholder]').forEach(function (node) { node.placeholder = tr(node.getAttribute('data-i18n-placeholder')); });
++        $$('[data-i18n-title]').forEach(function (node) { node.title = tr(node.getAttribute('data-i18n-title')); });
++        $$('[data-i18n-aria]').forEach(function (node) { node.setAttribute('aria-label', tr(node.getAttribute('data-i18n-aria'))); });
++      }
++
++      function safeText(value) { return String(value == null ? '' : value); }
++      function friendlyPath(value) { return safeText(value).replace(/^\\\\\?\\/, ''); }
++      function uid(prefix) { return prefix + '-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8); }
++      function formatTime(value) {
++        try { return new Date(value).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' }); }
++        catch (_error) { return ''; }
++      }
++      function formatDuration(value) {
++        var ms = Number(value || 0);
++        if (!ms) return '';
++        if (ms < 1000) return ms + ' ms';
++        if (ms < 60000) return Math.round(ms / 1000) + ' s';
++        return Math.floor(ms / 60000) + ' min ' + Math.round((ms % 60000) / 1000) + ' s';
++      }
++      function titleFromMessage(value) {
++        var text = safeText(value).replace(/\s+/g, ' ').trim();
++        return text.length > 32 ? text.slice(0, 32) + '…' : text || tr('新对话');
++      }
++      function showToast(message) {
++        var node = $('#toast');
++        node.textContent = tr(message);
++        node.classList.add('visible');
++        clearTimeout(toastTimer);
++        toastTimer = setTimeout(function () { node.classList.remove('visible'); }, 2600);
++      }
++      function openModal(id) { $('#' + id).classList.add('open'); }
++      function closeModal(id) { $('#' + id).classList.remove('open'); }
++
++      function activeProject() {
++        return state.projects.find(function (project) { return project.id === state.activeProjectId; }) || null;
++      }
++      function activeSession() {
++        var project = activeProject();
++        return project && (project.sessions || []).find(function (session) { return session.id === state.activeSessionId; }) || null;
++      }
++
++      function normalizeSession(session) {
++        session.model = session.model || 'default';
++        session.effort = EFFORT_LEVELS.indexOf(session.effort) >= 0 ? session.effort : 'high';
++        session.permission = session.permission || 'controlled';
++        if (session.permission === 'full') session.permission = 'controlled';
++        session.messages = Array.isArray(session.messages) ? session.messages : [];
++        session.events = Array.isArray(session.events) ? session.events.slice(-80) : [];
++        return session;
++      }
++
++      function load() {
++        try {
++          var raw = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY) || '[]';
++          var parsed = JSON.parse(raw);
++          state.projects = Array.isArray(parsed) ? parsed : [];
++          state.projects.forEach(function (project) {
++            project.path = friendlyPath(project.path);
++            project.sessions = Array.isArray(project.sessions) ? project.sessions.map(normalizeSession) : [];
++          });
++          if (state.projects.length) state.activeProjectId = state.projects[0].id;
++        } catch (_error) {
++          state.projects = [];
++        }
++      }
++
++      function save() {
++        localStorage.setItem(STORAGE_KEY, JSON.stringify(state.projects.map(function (project) {
++          return {
++            id: project.id,
++            name: project.name,
++            path: friendlyPath(project.path),
++            sessions: project.sessions || []
++          };
++        })));
++      }
++
++      function closeMenus(except) {
++        $$('details[open]').forEach(function (menu) { if (menu !== except) menu.removeAttribute('open'); });
++      }
++
++      function closeControlPopovers(except) {
++        ['project', 'permission', 'modelEffort'].forEach(function (name) {
++          if (name === except) return;
++          var button = $('#' + name + 'Button');
++          var popover = $('#' + name + 'Popover');
++          if (button) button.setAttribute('aria-expanded', 'false');
++          if (popover) popover.hidden = true;
++        });
++      }
++
++      function toggleControlPopover(name) {
++        var button = $('#' + name + 'Button');
++        var popover = $('#' + name + 'Popover');
++        var opening = popover.hidden;
++        closeControlPopovers(opening ? name : '');
++        popover.hidden = !opening;
++        button.setAttribute('aria-expanded', String(opening));
++        closeMenus();
++      }
++
++      function actionMenu(kind, id) {
++        var details = document.createElement('details');
++        details.className = 'item-menu';
++        var summary = document.createElement('summary');
++        summary.appendChild(createLucideIcon('ellipsis'));
++        summary.setAttribute('aria-label', tr('更多操作'));
++        var popover = document.createElement('div');
++        popover.className = 'menu-popover';
++        var rename = document.createElement('button');
++        rename.type = 'button';
++        rename.textContent = tr('重命名');
++        var remove = document.createElement('button');
++        remove.type = 'button';
++        remove.className = 'danger';
++        remove.textContent = kind === 'project' ? tr('删除项目') : tr('删除对话');
++        rename.addEventListener('click', function (event) {
++          event.stopPropagation();
++          details.removeAttribute('open');
++          kind === 'project' ? renameProject(id) : renameSession(id);
++        });
++        remove.addEventListener('click', function (event) {
++          event.stopPropagation();
++          details.removeAttribute('open');
++          void (kind === 'project' ? deleteProject(id) : deleteSession(id));
++        });
++        details.addEventListener('toggle', function () { if (details.open) closeMenus(details); });
++        popover.appendChild(rename);
++        popover.appendChild(remove);
++        details.appendChild(summary);
++        details.appendChild(popover);
++        return details;
++      }
++
++      function renderProjects() {
++        var host = $('#projectList');
++        host.textContent = '';
++        $('#projectEmpty').hidden = state.projects.length > 0;
++        state.projects.forEach(function (project) {
++          var section = document.createElement('section');
++          section.className = 'project';
++          var shell = document.createElement('div');
++          shell.className = 'item-shell' + (project.id === state.activeProjectId ? ' active' : '');
++          var row = document.createElement('button');
++          row.className = 'project-row';
++          row.type = 'button';
++          var name = document.createElement('span');
++          name.className = 'project-name';
++          name.textContent = project.name;
++          row.appendChild(createLucideIcon('folder'));
++          row.appendChild(name);
++          row.addEventListener('click', function () { selectProject(project.id); });
++          shell.appendChild(row);
++          shell.appendChild(actionMenu('project', project.id));
++          section.appendChild(shell);
++          if (project.id === state.activeProjectId) {
++            var list = document.createElement('div');
++            list.className = 'session-list';
++            (project.sessions || []).forEach(function (session) {
++              var sessionShell = document.createElement('div');
++              sessionShell.className = 'item-shell session-shell' + (session.id === state.activeSessionId ? ' active' : '');
++              var button = document.createElement('button');
++              button.className = 'session-row';
++              button.type = 'button';
++              var title = document.createElement('span');
++              title.className = 'session-title';
++              title.textContent = session.name;
++              button.appendChild(title);
++              button.addEventListener('click', function () { selectSession(project.id, session.id); });
++              sessionShell.appendChild(button);
++              sessionShell.appendChild(actionMenu('session', session.id));
++              list.appendChild(sessionShell);
++            });
++            section.appendChild(list);
++          }
++          host.appendChild(section);
++        });
++        renderProjectOptions();
++      }
++
++      function renderProjectOptions() {
++        var host = $('#projectOptions');
++        host.textContent = '';
++        state.projects.forEach(function (project) {
++          var button = document.createElement('button');
++          button.className = 'popover-option' + (project.id === state.activeProjectId ? ' selected' : '');
++          button.type = 'button';
++          var title = document.createElement('span');
++          title.className = 'option-title';
++          title.textContent = project.name;
++          if (project.id === state.activeProjectId) {
++            var check = document.createElement('span');
++            check.className = 'check';
++            check.textContent = tr('当前');
++            title.appendChild(check);
++          }
++          var path = document.createElement('span');
++          path.className = 'option-copy';
++          path.textContent = friendlyPath(project.path);
++          button.appendChild(title);
++          button.appendChild(path);
++          button.addEventListener('click', function () {
++            closeControlPopovers();
++            selectProject(project.id);
++          });
++          host.appendChild(button);
++        });
++        if (!state.projects.length) {
++          var empty = document.createElement('div');
++          empty.className = 'option-copy';
++          empty.textContent = tr('尚未选择');
++          host.appendChild(empty);
++        }
++      }
++
++      function renderWelcome(host, project) {
++        var wrap = document.createElement('div');
++        wrap.className = 'welcome';
++        var inner = document.createElement('div');
++        var heading = document.createElement('h1');
++        var copy = document.createElement('p');
++        if (project) {
++          heading.textContent = tr('想完成什么？');
++          copy.textContent = tr('直接输入任务，CCB 会自行读取、分析、修改并验证。');
++        } else {
++          heading.textContent = tr('选择一个项目后即可开始');
++          copy.textContent = tr('新建项目后可以直接输入任务，第一条消息会自动创建对话。');
++        }
++        inner.appendChild(heading);
++        inner.appendChild(copy);
++        wrap.appendChild(inner);
++        host.appendChild(wrap);
++      }
++
++      function appendMessage(role, text, time, persist, attachments) {
++        var article = document.createElement('article');
++        article.className = 'message ' + (role === 'user' ? 'user' : 'agent');
++        if (role === 'user') {
++          var userWrap = document.createElement('div');
++          if (attachments && attachments.length) {
++            var labels = document.createElement('div');
++            labels.className = 'message-attachments';
++            attachments.forEach(function (fileName) {
++              var label = document.createElement('span');
++              label.className = 'attachment-label';
++              label.textContent = fileName;
++              labels.appendChild(label);
++            });
++            userWrap.appendChild(labels);
++          }
++          var bubble = document.createElement('div');
++          bubble.className = 'user-bubble';
++          bubble.textContent = safeText(text);
++          userWrap.appendChild(bubble);
++          article.appendChild(userWrap);
++        } else {
++          var mark = document.createElement('div');
++          mark.className = 'agent-mark';
++          mark.textContent = 'C';
++          var content = document.createElement('div');
++          var head = document.createElement('div');
++          head.className = 'message-head';
++          var author = document.createElement('strong');
++          author.textContent = 'Claritide';
++          var stamp = document.createElement('span');
++          stamp.textContent = formatTime(time || Date.now());
++          var body = document.createElement('div');
++          body.className = 'message-body';
++          body.textContent = safeText(text);
++          head.appendChild(author);
++          head.appendChild(stamp);
++          content.appendChild(head);
++          content.appendChild(body);
++          article.appendChild(mark);
++          article.appendChild(content);
++        }
++        $('#conversationInner').appendChild(article);
++        if (persist) {
++          var session = activeSession();
++          session.messages.push({ role: role, text: safeText(text), time: time || Date.now(), attachments: attachments || [] });
++          session.updatedAt = Date.now();
++          save();
++        }
++        return role === 'user' ? $('.user-bubble', article) : $('.message-body', article);
++      }
++
++      function appendRunIndicator(label) {
++        removeRunIndicator();
++        var row = document.createElement('div');
++        row.className = 'run-indicator';
++        row.id = 'runIndicator';
++        var pulse = document.createElement('span');
++        pulse.className = 'pulse';
++        var copy = document.createElement('span');
++        copy.id = 'runIndicatorText';
++        copy.textContent = tr(label);
++        var details = document.createElement('button');
++        details.type = 'button';
++        details.textContent = tr('查看详情');
++        details.addEventListener('click', openActivity);
++        row.appendChild(pulse);
++        row.appendChild(copy);
++        row.appendChild(details);
++        $('#conversationInner').appendChild(row);
++        scrollConversation();
++      }
++
++      function updateRunIndicator(label) {
++        var node = $('#runIndicatorText');
++        if (node) node.textContent = tr(label);
++        else appendRunIndicator(label);
++      }
++
++      function removeRunIndicator() {
++        var node = $('#runIndicator');
++        if (node) node.remove();
++      }
++
++      function appendResultCard(result) {
++        var card = document.createElement('div');
++        card.className = 'result-card';
++        var title = document.createElement('p');
++        title.className = 'card-title';
++        title.textContent = tr('任务已完成');
++        var copy = document.createElement('p');
++        copy.className = 'card-copy';
++        var parts = [];
++        if (result && result.durationMs) parts.push(formatDuration(result.durationMs));
++        if (result && result.numTurns) parts.push(String(result.numTurns) + (english ? ' turns' : ' 轮处理'));
++        copy.textContent = parts.join(' · ') || (english ? 'CCB finished the task.' : 'CCB 已完成本次任务。');
++        var actions = document.createElement('div');
++        actions.className = 'card-actions';
++        var details = document.createElement('button');
++        details.type = 'button';
++        details.className = 'card-button';
++        details.textContent = tr('查看详情');
++        details.addEventListener('click', openActivity);
++        actions.appendChild(details);
++        card.appendChild(title);
++        card.appendChild(copy);
++        card.appendChild(actions);
++        $('#conversationInner').appendChild(card);
++      }
++
++      function appendErrorCard(message, approvalUnsupported) {
++        var card = document.createElement('div');
++        card.className = approvalUnsupported ? 'approval-card' : 'error-card';
++        var title = document.createElement('p');
++        title.className = 'card-title';
++        title.textContent = approvalUnsupported ? tr('调整权限') : tr('任务失败');
++        var copy = document.createElement('p');
++        copy.className = 'card-copy';
++        copy.textContent = approvalUnsupported ? tr('当前受控模式需要工具审批，但审批桥接尚未启用。请新建对话并选择只读或完全访问。') : safeText(message);
++        var actions = document.createElement('div');
++        actions.className = 'card-actions';
++        var retry = document.createElement('button');
++        retry.type = 'button';
++        retry.className = 'card-button';
++        retry.textContent = approvalUnsupported ? tr('调整权限') : tr('重试');
++        retry.addEventListener('click', function () {
++          if (approvalUnsupported) {
++            newConversation();
++            toggleControlPopover('permission');
++          } else {
++            $('#prompt').value = state.lastSubmittedText;
++            autoSizePrompt();
++            syncControls();
++            $('#prompt').focus();
++          }
++        });
++        var details = document.createElement('button');
++        details.type = 'button';
++        details.className = 'card-button';
++        details.textContent = tr('查看详情');
++        details.addEventListener('click', openActivity);
++        actions.appendChild(retry);
++        actions.appendChild(details);
++        card.appendChild(title);
++        card.appendChild(copy);
++        card.appendChild(actions);
++        $('#conversationInner').appendChild(card);
++        scrollConversation();
++      }
++
++      function renderConversation() {
++        var host = $('#conversationInner');
++        host.textContent = '';
++        var project = activeProject();
++        var session = activeSession();
++        if (!project || !session) {
++          renderWelcome(host, project);
++          return;
++        }
++        session.messages.forEach(function (message) {
++          appendMessage(message.role, message.text, message.time, false, message.attachments || []);
++        });
++        if (session.lastError) appendErrorCard(session.lastError.message, session.lastError.code === 'tool_approval_unsupported');
++        else if (session.lastResult) appendResultCard(session.lastResult);
++        if (state.turnActive || state.starting) appendRunIndicator(state.starting ? '正在启动 Agent' : '正在处理任务');
++        scrollConversation();
++      }
++
++      function scrollConversation() {
++        requestAnimationFrame(function () { $('#conversation').scrollTop = $('#conversation').scrollHeight; });
++      }
++
++      function eventLabel(kind, payload) {
++        if (kind === 'session_started') return english ? 'Agent started' : 'Agent 已启动';
++        if (kind === 'task_started') return english ? 'Task started' : '开始任务';
++        if (kind === 'tool_started') return toolActivity(payload && (payload.tool || payload.toolName));
++        if (kind === 'tool_completed') return english ? 'Tool completed' : '工具执行完成';
++        if (kind === 'turn_completed') return tr('任务已完成');
++        if (kind === 'error') return tr('任务失败');
++        if (kind === 'stopped') return tr('停止');
++        return safeText(kind);
++      }
++
++      function eventDetail(kind, payload) {
++        payload = payload || {};
++        if (kind === 'session_started') return [payload.model, payload.permissionMode].filter(Boolean).join(' · ');
++        if (kind === 'tool_started') return safeText(payload.tool || payload.toolName);
++        if (kind === 'tool_completed') return safeText(payload.preview || payload.toolUseId || '');
++        if (kind === 'turn_completed') return [formatDuration(payload.durationMs), payload.numTurns ? payload.numTurns + (english ? ' turns' : ' 轮') : ''].filter(Boolean).join(' · ');
++        return safeText(payload.message || payload.text || payload.code || payload.reason || '');
++      }
++
++      function recordEvent(kind, payload, timestamp) {
++        var session = activeSession();
++        if (!session) return;
++        session.events.push({ kind: kind, payload: payload || {}, time: timestamp || Date.now() });
++        session.events = session.events.slice(-80);
++        save();
++        renderActivity();
++      }
++
++      function renderActivity() {
++        var session = activeSession();
++        var events = session ? session.events || [] : [];
++        var host = $('#eventLog');
++        host.textContent = '';
++        $('#eventEmpty').hidden = events.length > 0;
++        events.forEach(function (event) {
++          var item = document.createElement('div');
++          item.className = 'log-item';
++          var title = document.createElement('strong');
++          title.textContent = eventLabel(event.kind, event.payload);
++          var time = document.createElement('span');
++          time.className = 'log-time';
++          time.textContent = formatTime(event.time);
++          title.appendChild(time);
++          var copy = document.createElement('p');
++          copy.textContent = eventDetail(event.kind, event.payload);
++          item.appendChild(title);
++          item.appendChild(copy);
++          host.appendChild(item);
++        });
++        $('#eventCount').textContent = events.length + ' ' + tr('条');
++      }
++
++      function openActivity() {
++        $('#activityPanel').hidden = false;
++        $('#headerMenu').removeAttribute('open');
++        renderActivity();
++      }
++
++      function effortLabel(value) {
++        return tr({ low: '快速', medium: '标准', high: '深度', xhigh: '极高', max: '最大' }[value] || '深度');
++      }
++
++      function modelLabel(value) {
++        if (!value || value === 'default') return tr('默认');
++        var label = value.replace(/^gpt-/i, 'GPT-').replace(/[_/]/g, ' ');
++        label = label.replace(/-(sol|terra|luna)$/i, function (_match, name) {
++          return ' ' + name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
++        });
++        return label;
++      }
++
++      function currentModel() { var session = activeSession(); return session ? session.model : state.draftModel; }
++      function currentEffort() { var session = activeSession(); return session ? session.effort : state.draftEffort; }
++      function currentPermission() { var session = activeSession(); return session ? session.permission : state.draftPermission; }
++
++      function permissionLabel(value) {
++        return tr(value === 'readonly' ? '只读访问' : value === 'full' ? '完全访问' : '请求批准');
++      }
++
++      function fillModels(models) {
++        var select = $('#modelSelect');
++        var current = currentModel();
++        select.textContent = '';
++        var values = models.length ? models.slice() : ['default'];
++        if (values.indexOf('default') < 0) values.unshift('default');
++        values.forEach(function (model) {
++          var option = document.createElement('option');
++          option.value = model;
++          option.textContent = modelLabel(model);
++          select.appendChild(option);
++        });
++        if (values.indexOf(current) < 0) current = values[0];
++        select.value = current;
++        state.draftModel = current;
++      }
++
++      function renderAttachments() {
++        var tray = $('#attachmentTray');
++        tray.textContent = '';
++        tray.hidden = state.attachments.length === 0;
++        state.attachments.forEach(function (attachment, index) {
++          var chip = document.createElement('div');
++          chip.className = 'attachment-chip';
++          var name = document.createElement('span');
++          name.textContent = attachment.name;
++          var remove = document.createElement('button');
++          remove.type = 'button';
++          remove.textContent = '×';
++          remove.setAttribute('aria-label', (english ? 'Remove ' : '移除 ') + attachment.name);
++          remove.addEventListener('click', function () {
++            state.attachments.splice(index, 1);
++            renderAttachments();
++          });
++          chip.appendChild(name);
++          chip.appendChild(remove);
++          tray.appendChild(chip);
++        });
++      }
++
++      function syncControls() {
++        var project = activeProject();
++        var session = activeSession();
++        var projectReady = Boolean(project);
++        var runtimeReady = Boolean(state.status && state.status.available);
++        var locked = Boolean(state.nativeSessionId);
++        var busy = state.turnActive || state.starting;
++        var promptHasValue = Boolean($('#prompt').value.trim() || state.attachments.length);
++
++        $('#prompt').disabled = !projectReady || !runtimeReady;
++        $('#addContext').disabled = !projectReady || !runtimeReady || busy;
++        $('#permissionButton').disabled = !projectReady || locked || busy;
++        $('#modelEffortButton').disabled = !projectReady || locked || busy;
++        $('#modelSelect').disabled = locked || busy;
++        $('#effortRange').disabled = locked || busy;
++        $('#voiceButton').disabled = !projectReady || !runtimeReady || !SpeechRecognition || busy;
++        $('#voiceButton').title = !SpeechRecognition ? tr('当前系统不支持语音输入') : tr('语音输入');
++
++        $('#send').disabled = busy ? !state.turnActive : !projectReady || !runtimeReady || !promptHasValue;
++        $('#sendLabel').textContent = tr(state.turnActive ? '停止' : '发送');
++        $('#send').setAttribute('aria-label', tr(state.turnActive ? '停止' : '发送'));
++        $('#send').classList.toggle('stop-state', state.turnActive);
++
++        $('#sessionHeading').textContent = session ? session.name : tr('新对话');
++        $('#sessionMeta').textContent = project ? friendlyPath(project.path) : '';
++        $('#projectButton').textContent = project ? project.name : tr('选择项目');
++        $('#permissionLabel').textContent = permissionLabel(currentPermission());
++        $('#modelEffortLabel').textContent = modelLabel(currentModel()) + ' · ' + effortLabel(currentEffort());
++        $('#modelSelect').value = currentModel();
++        $('#effortRange').value = String(Math.max(0, EFFORT_LEVELS.indexOf(currentEffort())));
++        $('#effortValue').textContent = effortLabel(currentEffort());
++        $('#voiceLabel').textContent = tr(state.voiceActive ? '正在聆听' : '语音');
++        $('#voiceButton').setAttribute('aria-label', tr(state.voiceActive ? '正在聆听' : '语音'));
++        $('#voiceButton').classList.toggle('listening', state.voiceActive);
++
++        $$('[data-permission]').forEach(function (button) {
++          var selected = button.getAttribute('data-permission') === currentPermission();
++          button.classList.toggle('selected', selected);
++          $('.check', button).textContent = selected ? tr('当前') : '';
++        });
++        $('#renameActiveSession').disabled = !session;
++        $('#deleteActiveSession').disabled = !session;
++      }
++
++      async function closeNativeSession(clearOnline) {
++        var id = state.nativeSessionId;
++        state.nativeSessionId = '';
++        state.turnActive = false;
++        state.starting = false;
++        if (bridge && (id || clearOnline)) {
++          try {
++            await bridge.close({
++              sessionId: id || null,
++              clearOnline: clearOnline === true
++            });
++          } catch (_error) {}
++        }
++      }
++
++      function selectProject(projectId) {
++        if (state.turnActive || state.starting) return showToast('请先停止当前执行');
++        void closeNativeSession();
++        state.activeProjectId = projectId;
++        state.activeSessionId = '';
++        state.attachments = [];
++        renderProjects();
++        renderConversation();
++        renderAttachments();
++        renderActivity();
++        syncControls();
++        $('#prompt').focus();
++      }
++
++      function selectSession(projectId, sessionId) {
++        if (state.turnActive || state.starting) return showToast('请先停止当前执行');
++        void closeNativeSession();
++        state.activeProjectId = projectId;
++        state.activeSessionId = sessionId;
++        state.attachments = [];
++        renderProjects();
++        renderConversation();
++        renderAttachments();
++        renderActivity();
++        syncControls();
++        $('#prompt').focus();
++      }
++
++      function newConversation() {
++        if (!activeProject()) {
++          openProjectModal();
++          return;
++        }
++        if (state.turnActive || state.starting) return showToast('请先停止当前执行');
++        void closeNativeSession();
++        state.activeSessionId = '';
++        state.attachments = [];
++        state.draftPermission = 'controlled';
++        state.draftEffort = 'high';
++        renderProjects();
++        renderConversation();
++        renderAttachments();
++        renderActivity();
++        syncControls();
++        $('#prompt').focus();
++        showToast('新对话已准备好');
++      }
++
++      function openProjectModal() {
++        closeControlPopovers();
++        state.pendingWorkspace = null;
++        $('#projectName').value = '';
++        $('#projectPath').value = '';
++        $('#createProject').disabled = true;
++        openModal('projectModal');
++      }
++
++      async function chooseWorkspace() {
++        if (!bridge) return showToast('本地桥接不可用');
++        try {
++          var workspace = await bridge.selectWorkspace();
++          if (!workspace) return;
++          state.pendingWorkspace = workspace;
++          $('#projectPath').value = friendlyPath(workspace.path || workspace.name || '');
++          if (!$('#projectName').value) $('#projectName').value = workspace.name || (english ? 'New project' : '新项目');
++          $('#createProject').disabled = false;
++        } catch (error) {
++          showToast((english ? 'Failed to choose folder: ' : '选择文件夹失败：') + safeText(error && error.message || error));
++        }
++      }
++
++      function createProject() {
++        var workspace = state.pendingWorkspace;
++        var name = $('#projectName').value.trim();
++        if (!workspace || !name) return;
++        var project = { id: uid('project'), name: name, path: friendlyPath(workspace.path), nativeWorkspace: workspace, sessions: [] };
++        state.projects.unshift(project);
++        state.activeProjectId = project.id;
++        state.activeSessionId = '';
++        save();
++        closeModal('projectModal');
++        renderProjects();
++        renderConversation();
++        renderActivity();
++        syncControls();
++        $('#prompt').focus();
++        showToast('项目已创建，可以直接输入任务');
++      }
++
++      function renameProject(projectId) {
++        var project = state.projects.find(function (item) { return item.id === projectId; });
++        if (!project) return;
++        var name = window.prompt(tr('项目名称'), project.name);
++        if (!name || !name.trim()) return;
++        project.name = name.trim().slice(0, 80);
++        save();
++        renderProjects();
++        syncControls();
++        showToast('项目已重命名');
++      }
++
++      async function deleteProject(projectId) {
++        var project = state.projects.find(function (item) { return item.id === projectId; });
++        if (!project) return;
++        var message = english ? 'Remove project "' + project.name + '"? Local files will not be deleted.' : '删除项目“' + project.name + '”？只会删除 Claritide 中的项目和对话记录，不会删除本地文件。';
++        if (!window.confirm(message)) return;
++        if (projectId === state.activeProjectId) await closeNativeSession();
++        state.projects = state.projects.filter(function (item) { return item.id !== projectId; });
++        if (projectId === state.activeProjectId) {
++          state.activeProjectId = state.projects[0] ? state.projects[0].id : '';
++          state.activeSessionId = '';
++        }
++        save();
++        renderProjects();
++        renderConversation();
++        renderActivity();
++        syncControls();
++        showToast('项目已删除，本地文件夹和文件没有被删除');
++      }
++
++      function renameSession(sessionId) {
++        var project = activeProject();
++        var session = project && (project.sessions || []).find(function (item) { return item.id === sessionId; });
++        if (!session) return;
++        var name = window.prompt(english ? 'Chat name' : '对话名称', session.name);
++        if (!name || !name.trim()) return;
++        session.name = name.trim().slice(0, 100);
++        save();
++        renderProjects();
++        syncControls();
++        showToast('对话已重命名');
++      }
++
++      async function deleteSession(sessionId) {
++        var project = activeProject();
++        var session = project && (project.sessions || []).find(function (item) { return item.id === sessionId; });
++        if (!session) return;
++        if (!window.confirm(english ? 'Delete chat "' + session.name + '"?' : '删除对话“' + session.name + '”？')) return;
++        if (sessionId === state.activeSessionId) await closeNativeSession();
++        project.sessions = project.sessions.filter(function (item) { return item.id !== sessionId; });
++        if (sessionId === state.activeSessionId) state.activeSessionId = '';
++        save();
++        renderProjects();
++        renderConversation();
++        renderActivity();
++        syncControls();
++        showToast('对话已删除');
++      }
++
++      function ensureConversation(value) {
++        var session = activeSession();
++        if (session) return session;
++        var project = activeProject();
++        if (!project) throw new Error(tr('选择项目'));
++        session = normalizeSession({
++          id: uid('session'),
++          name: titleFromMessage(value),
++          model: state.draftModel,
++          effort: state.draftEffort,
++          permission: state.draftPermission,
++          updatedAt: Date.now(),
++          messages: [],
++          events: []
++        });
++        if (state.draftPermission === 'full') {
++          session.permission = 'full';
++          state.fullAccessGrants[session.id] = true;
++        }
++        project.sessions.unshift(session);
++        state.activeSessionId = session.id;
++        save();
++        renderProjects();
++        syncControls();
++        return session;
++      }
++
++      function setPermission(value) {
++        var session = activeSession();
++        closeControlPopovers();
++        if (value === 'full') {
++          state.pendingFullAccess = { sessionId: session && session.id || '', draft: !session };
++          openModal('fullAccessModal');
++          syncControls();
++          return;
++        }
++        if (session) {
++          session.permission = value;
++          delete state.fullAccessGrants[session.id];
++          save();
++        } else {
++          state.draftPermission = value;
++        }
++        syncControls();
++        showToast('权限模式已更新');
++      }
++
++      function cancelFullAccess() {
++        state.pendingFullAccess = null;
++        closeModal('fullAccessModal');
++        syncControls();
++      }
++
++      function confirmFullAccess() {
++        var pending = state.pendingFullAccess;
++        state.pendingFullAccess = null;
++        closeModal('fullAccessModal');
++        if (!pending) return syncControls();
++        var session = activeSession();
++        if (pending.draft) state.draftPermission = 'full';
++        else if (session && session.id === pending.sessionId) {
++          session.permission = 'full';
++          state.fullAccessGrants[session.id] = true;
++          save();
++        }
++        syncControls();
++        showToast('已为本对话启用完全访问');
++      }
++
++      function setModel(value) {
++        var session = activeSession();
++        if (state.nativeSessionId) return showToast('会话运行后请新建对话再切换模型、思考深度或权限。');
++        if (session) { session.model = value; save(); }
++        else state.draftModel = value;
++        syncControls();
++      }
++
++      function setEffort(value) {
++        if (EFFORT_LEVELS.indexOf(value) < 0) return;
++        var session = activeSession();
++        if (state.nativeSessionId) return showToast('会话运行后请新建对话再切换模型、思考深度或权限。');
++        if (session) { session.effort = value; save(); }
++        else state.draftEffort = value;
++        syncControls();
++      }
++
++      function toolActivity(tool) {
++        var value = safeText(tool).toLowerCase();
++        if (/read/.test(value)) return tr('正在读取项目');
++        if (/glob|grep|search|lsp/.test(value)) return tr('正在搜索代码');
++        if (/edit|write|notebook/.test(value)) return tr('正在修改文件');
++        if (/bash|powershell|execute|terminal/.test(value)) return tr('正在执行命令');
++        if (/web|chrome|browser/.test(value)) return tr('正在搜索网页');
++        if (/agent|task|team|workflow/.test(value)) return tr('正在分派任务');
++        return tr('正在处理任务');
++      }
++
++      async function ensureNativeSession() {
++        if (state.nativeSessionId) return state.nativeSessionId;
++        var project = activeProject();
++        var session = activeSession();
++        if (!project || !session) throw new Error(tr('选择项目'));
++        if (session.permission === 'full' && !state.fullAccessGrants[session.id]) {
++          throw new Error(english ? 'Full access must be confirmed again for this app run.' : '完全访问需要在本次应用运行期间重新确认');
++        }
++        if (!project.nativeWorkspace) {
++          var workspace = await bridge.selectWorkspace();
++          if (!workspace) throw new Error(english ? 'Choose the project folder again.' : '需要重新授权项目文件夹');
++          project.nativeWorkspace = workspace;
++          project.path = friendlyPath(workspace.path || project.path);
++          save();
++          renderProjects();
++        }
++        var id = crypto.randomUUID();
++        await bridge.startSession({
++          clientSessionId: id,
++          workspace: project.nativeWorkspace.id,
++          model: session.model,
++          effort: session.effort,
++          permission: session.permission,
++          locale: locale
++        });
++        state.nativeSessionId = id;
++        return id;
++      }
++
++      function buildRuntimeContent(value, attachments) {
++        if (!attachments.length) return value;
++        var blocks = attachments.map(function (attachment) {
++          var name = attachment.name.replace(/[<>"']/g, '_');
++          return '<attached_file name="' + name + '">\n' + attachment.content + '\n</attached_file>';
++        });
++        return value + '\n\n' + blocks.join('\n\n');
++      }
++
++      async function send() {
++        if (state.turnActive) return stop();
++        var value = $('#prompt').value.trim();
++        if ((!value && !state.attachments.length) || state.starting) return;
++        if (!value) value = english ? 'Review the attached files and help me with them.' : '请查看附件并帮助我处理。';
++        var session = ensureConversation(value);
++        var attachments = state.attachments.slice();
++        var attachmentNames = attachments.map(function (item) { return item.name; });
++        state.lastSubmittedText = value;
++        state.starting = true;
++        session.lastError = null;
++        session.lastResult = null;
++        renderConversation();
++        syncControls();
++        try {
++          var id = await ensureNativeSession();
++          removeRunIndicator();
++          appendMessage('user', value, Date.now(), true, attachmentNames);
++          $('#prompt').value = '';
++          state.attachments = [];
++          renderAttachments();
++          state.starting = false;
++          state.turnActive = true;
++          appendRunIndicator('正在处理任务');
++          syncControls();
++          recordEvent('task_started', { message: value }, Date.now());
++          await bridge.send({ sessionId: id, content: buildRuntimeContent(value, attachments) });
++        } catch (error) {
++          state.nativeSessionId = '';
++          state.starting = false;
++          state.turnActive = false;
++          removeRunIndicator();
++          var message = safeText(error && error.message || error);
++          session.lastError = { code: 'start_failed', message: message, time: Date.now() };
++          save();
++          appendErrorCard(message, false);
++          recordEvent('error', { code: 'start_failed', message: message, terminal: true }, Date.now());
++          syncControls();
++        }
++      }
++
++      async function stop() {
++        if (!state.nativeSessionId || !state.turnActive) return;
++        try {
++          await bridge.stop({ sessionId: state.nativeSessionId });
++          showToast('已发送停止请求');
++        } catch (error) {
++          showToast((english ? 'Failed to stop: ' : '停止失败：') + safeText(error && error.message || error));
++        }
++      }
++
++      async function returnToWorkspace() {
++        await closeNativeSession(true);
++        window.location.assign(WORKSPACE_URL);
++      }
++
++      function handleEvent(event) {
++        if (state.nativeSessionId && event.sessionId && event.sessionId !== state.nativeSessionId) return;
++        var payload = event.payload || {};
++        var session = activeSession();
++        if (!session) return;
++
++        if (event.type === 'text_delta') {
++          var last = $('#conversationInner .message.agent:last-of-type .message-body');
++          if (!last) last = appendMessage('agent', '', Date.now(), false);
++          last.textContent = safeText(last.textContent) + safeText(payload.text);
++        } else if (event.type === 'assistant_final') {
++          var finalBody = $('#conversationInner .message.agent:last-of-type .message-body');
++          if (!finalBody) finalBody = appendMessage('agent', '', Date.now(), false);
++          finalBody.textContent = safeText(payload.text || finalBody.textContent);
++          var lastMessage = session.messages[session.messages.length - 1];
++          if (lastMessage && lastMessage.role === 'agent') lastMessage.text = finalBody.textContent;
++          else session.messages.push({ role: 'agent', text: finalBody.textContent, time: Date.now(), attachments: [] });
++          session.updatedAt = Date.now();
++          save();
++        } else if (event.type === 'tool_started') {
++          updateRunIndicator(toolActivity(payload.tool || payload.toolName));
++        } else if (event.type === 'turn_completed') {
++          state.turnActive = false;
++          state.starting = false;
++          removeRunIndicator();
++          session.lastResult = payload;
++          session.lastError = null;
++          save();
++          appendResultCard(payload);
++        } else if (event.type === 'error') {
++          var approvalUnsupported = payload.code === 'tool_approval_unsupported';
++          session.lastError = { code: payload.code, message: safeText(payload.message || payload.code), time: Date.now() };
++          save();
++          if (payload.terminal === true || approvalUnsupported) {
++            state.turnActive = false;
++            state.starting = false;
++            removeRunIndicator();
++            if (payload.terminal === true) state.nativeSessionId = '';
++            appendErrorCard(payload.message || payload.code, approvalUnsupported);
++          }
++        } else if (event.type === 'stopped') {
++          state.turnActive = Boolean(payload.settling);
++          if (!payload.settling) {
++            state.nativeSessionId = '';
++            removeRunIndicator();
++          }
++        }
++
++        if (event.type !== 'text_delta' && event.type !== 'assistant_final') {
++          recordEvent(event.type, payload, event.timestampMs || Date.now());
++        }
++        syncControls();
++        scrollConversation();
++      }
++
++      async function addFiles(files) {
++        var total = state.attachments.reduce(function (sum, item) { return sum + item.size; }, 0);
++        for (var index = 0; index < files.length; index += 1) {
++          var file = files[index];
++          if (file.size > FILE_LIMIT_BYTES) {
++            showToast(tr('文件过大') + ': ' + file.name);
++            continue;
++          }
++          if (total + file.size > TOTAL_FILE_LIMIT_BYTES) {
++            showToast('附件总大小不能超过 1 MB');
++            break;
++          }
++          try {
++            var content = await file.text();
++            if (content.indexOf('\u0000') >= 0) throw new Error('binary');
++            state.attachments.push({ name: file.name, content: content, size: file.size });
++            total += file.size;
++            showToast(tr('已添加文件') + ': ' + file.name);
++          } catch (_error) {
++            showToast(tr('仅支持文本文件') + ': ' + file.name);
++          }
++        }
++        $('#fileInput').value = '';
++        renderAttachments();
++        syncControls();
++      }
++
++      function toggleVoice() {
++        if (!SpeechRecognition) return showToast('当前系统不支持语音输入');
++        if (state.voiceActive && recognition) {
++          recognition.stop();
++          return;
++        }
++        recognition = new SpeechRecognition();
++        recognition.lang = english ? 'en-US' : 'zh-CN';
++        recognition.interimResults = false;
++        recognition.continuous = true;
++        recognition.onstart = function () { state.voiceActive = true; syncControls(); };
++        recognition.onend = function () { state.voiceActive = false; syncControls(); };
++        recognition.onerror = function () { state.voiceActive = false; syncControls(); showToast('语音识别失败'); };
++        recognition.onresult = function (event) {
++          var text = '';
++          for (var index = event.resultIndex; index < event.results.length; index += 1) {
++            if (event.results[index].isFinal) text += event.results[index][0].transcript;
++          }
++          if (text) {
++            var prompt = $('#prompt');
++            prompt.value = (prompt.value ? prompt.value + ' ' : '') + text.trim();
++            autoSizePrompt();
++            syncControls();
++          }
++        };
++        try { recognition.start(); }
++        catch (_error) { showToast('语音识别失败'); }
++      }
++
++      function autoSizePrompt() {
++        var prompt = $('#prompt');
++        prompt.style.height = 'auto';
++        prompt.style.height = Math.min(prompt.scrollHeight, 160) + 'px';
++      }
++
++      function bind() {
++        $('#newProject').addEventListener('click', openProjectModal);
++        $('#createProjectFromPopover').addEventListener('click', openProjectModal);
++        $('#newSession').addEventListener('click', newConversation);
++        $('#chooseFolder').addEventListener('click', chooseWorkspace);
++        $('#createProject').addEventListener('click', createProject);
++        $('#returnWorkspace').addEventListener('click', returnToWorkspace);
++        $('#projectButton').addEventListener('click', function () { toggleControlPopover('project'); });
++        $('#permissionButton').addEventListener('click', function () { toggleControlPopover('permission'); });
++        $('#modelEffortButton').addEventListener('click', function () { toggleControlPopover('modelEffort'); });
++        $$('[data-permission]').forEach(function (button) {
++          button.addEventListener('click', function () { setPermission(button.getAttribute('data-permission')); });
++        });
++        $('#modelSelect').addEventListener('change', function (event) { setModel(event.target.value); });
++        $('#effortRange').addEventListener('input', function (event) { setEffort(EFFORT_LEVELS[Number(event.target.value)]); });
++        $('#addContext').addEventListener('click', function () { $('#fileInput').click(); });
++        $('#fileInput').addEventListener('change', function (event) { void addFiles(Array.prototype.slice.call(event.target.files || [])); });
++        $('#voiceButton').addEventListener('click', toggleVoice);
++        $('#send').addEventListener('click', send);
++        $('#prompt').addEventListener('input', function () { autoSizePrompt(); syncControls(); });
++        $('#prompt').addEventListener('keydown', function (event) {
++          if (event.key === 'Enter' && !event.shiftKey) {
++            event.preventDefault();
++            void send();
++          }
++        });
++        $('#showActivity').addEventListener('click', openActivity);
++        $('#closeActivity').addEventListener('click', function () { $('#activityPanel').hidden = true; });
++        $('#renameActiveSession').addEventListener('click', function () { var session = activeSession(); if (session) renameSession(session.id); $('#headerMenu').removeAttribute('open'); });
++        $('#deleteActiveSession').addEventListener('click', function () { var session = activeSession(); if (session) void deleteSession(session.id); $('#headerMenu').removeAttribute('open'); });
++        $('#cancelFullAccess').addEventListener('click', cancelFullAccess);
++        $('#cancelFullAccessTop').addEventListener('click', cancelFullAccess);
++        $('#confirmFullAccess').addEventListener('click', confirmFullAccess);
++        $$('[data-close]').forEach(function (button) {
++          button.addEventListener('click', function () { closeModal(button.getAttribute('data-close')); });
++        });
++        $$('.modal-backdrop').forEach(function (backdrop) {
++          backdrop.addEventListener('click', function (event) {
++            if (event.target !== backdrop) return;
++            if (backdrop.id === 'fullAccessModal') cancelFullAccess();
++            else closeModal(backdrop.id);
++          });
++        });
++        document.addEventListener('click', function (event) {
++          if (!event.target.closest('details')) closeMenus();
++          if (!event.target.closest('.composer-control')) closeControlPopovers();
++        });
++        document.addEventListener('keydown', function (event) {
++          if (event.key === 'Escape') {
++            closeMenus();
++            closeControlPopovers();
++            $('#activityPanel').hidden = true;
++          }
++          if (event.ctrlKey && event.key.toLowerCase() === 'n') {
++            event.preventDefault();
++            newConversation();
++          }
++        });
++      }
++
++      async function init() {
++        applyTranslations();
++        load();
++        bind();
++        renderProjects();
++        renderConversation();
++        renderAttachments();
++        renderActivity();
++        if (!bridge) {
++          $('#runtimeStatus').textContent = tr('本地桥接不可用');
++          syncControls();
++          return;
++        }
+         bridge.onEvent(handleEvent);
+-        try{state.status=await bridge.getStatus();$('#runtimeStatus').textContent=state.status.available?(english?'Agent ready · ':'Agent 已就绪 · ')+state.status.toolsMode:tr('运行时未配置');fillModels(state.status.allowedModels||[])}catch(error){state.status={available:false};$('#runtimeStatus').textContent=tr('运行时检查失败');addEvent('错误',safeText(error&&error.message||error))}
+-        syncControls()
++        try {
++          state.status = await bridge.getStatus();
++          $('#runtimeStatus').textContent = tr(state.status.available ? 'Agent 已就绪' : '运行时未配置');
++          $('#runtimeDot').classList.toggle('ready', Boolean(state.status.available));
++          fillModels(state.status.allowedModels || []);
++        } catch (error) {
++          state.status = { available: false };
++          $('#runtimeStatus').textContent = tr('运行时检查失败');
++          var session = activeSession();
++          if (session) recordEvent('error', { message: safeText(error && error.message || error) }, Date.now());
++        }
++        syncControls();
+       }
++
+       void init();
+     })();
+   </script>
+diff --git a/src-tauri/src/agent_runtime.rs b/src-tauri/src/agent_runtime.rs
+index 505c83f..4f68404 100644
+--- a/src-tauri/src/agent_runtime.rs
++++ b/src-tauri/src/agent_runtime.rs
+@@ -42,19 +42,32 @@ const RUNTIME_EXECUTABLE_ENV: &str = "CLARITIDE_AGENT_EXECUTABLE";
+ const RUNTIME_ENTRYPOINT_ENV: &str = "CLARITIDE_AGENT_ENTRYPOINT";
+ const RUNTIME_MODELS_ENV: &str = "CLARITIDE_AGENT_ALLOWED_MODELS";
+ const RUNTIME_TOOLS_ENV: &str = "CLARITIDE_AGENT_TOOLS_MODE";
++const ONLINE_GATEWAY_URL: &str = "https://watch.sding.me/api/v1/agent-ai/openai/v1";
++const ONLINE_TOKEN_MIN_TTL_SECONDS: u64 = 300;
++const ONLINE_TOKEN_MAX_TTL_SECONDS: u64 = 3600;
++const ONLINE_TOKEN_START_MARGIN_MS: u64 = 30_000;
+ 
+ static RUNTIME: OnceLock<AgentRuntime> = OnceLock::new();
+ static HANDLE_COUNTER: AtomicU64 = AtomicU64::new(1);
+ static UUID_COUNTER: AtomicU64 = AtomicU64::new(1);
+ static PROCESS_GENERATION: AtomicU64 = AtomicU64::new(1);
+ 
+-#[derive(Debug, Clone)]
++#[derive(Clone)]
+ struct RuntimeConfig {
+     executable: PathBuf,
+     entrypoint: Option<PathBuf>,
+     models: Vec<String>,
+     tools_mode: ToolsMode,
+     source: RuntimeSource,
++    online: Option<OnlineRuntimeConfig>,
++}
++
++#[derive(Clone)]
++struct OnlineRuntimeConfig {
++    gateway_url: String,
++    token: String,
++    expires_at_ms: u64,
++    allowed_models: Vec<String>,
+ }
+ 
+ #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+@@ -137,6 +150,7 @@ struct AgentRuntime {
+ struct RuntimeState {
+     workspaces: HashMap<String, PathBuf>,
+     sessions: HashMap<String, SessionRecord>,
++    online_runtime: Option<OnlineRuntimeConfig>,
+     last_error: Option<String>,
+ }
+ 
+@@ -149,6 +163,7 @@ struct SessionRecord {
+     workspace_id: String,
+     workspace_name: String,
+     model: String,
++    effort: String,
+     permission: AgentPermissionMode,
+     events: VecDeque<AgentEvent>,
+     queued_event_bytes: usize,
+@@ -233,6 +248,7 @@ pub struct AgentStatus {
+ pub struct AgentCapabilities {
+     workspace: bool,
+     models: bool,
++    effort: bool,
+     streaming: bool,
+     stop: bool,
+     resume: bool,
+@@ -249,6 +265,7 @@ pub struct AgentSessionSummary {
+     workspace_id: String,
+     workspace_name: String,
+     model: String,
++    effort: String,
+     permission: String,
+ }
+ 
+@@ -268,6 +285,8 @@ pub struct AgentStartRequest {
+     #[serde(default)]
+     model: Option<String>,
+     #[serde(default)]
++    effort: Option<String>,
++    #[serde(default)]
+     locale: Option<String>,
+     #[serde(default)]
+     permission: AgentPermissionMode,
+@@ -278,6 +297,7 @@ pub struct AgentStartRequest {
+ pub struct AgentStartResponse {
+     session_id: String,
+     model: String,
++    effort: String,
+     workspace: String,
+     permission: String,
+ }
+@@ -301,6 +321,26 @@ pub struct AgentSessionRequest {
+     session_id: String,
+ }
+ 
++#[derive(Deserialize)]
++#[serde(rename_all = "camelCase")]
++pub struct AgentOnlineRuntimeRequest {
++    gateway_url: String,
++    token: String,
++    expires_in: u64,
++    default_model: String,
++    allowed_models: Vec<String>,
++    session_id: String,
++}
++
++#[derive(Debug, Deserialize)]
++#[serde(rename_all = "camelCase")]
++pub struct AgentCloseRequest {
++    #[serde(default)]
++    session_id: Option<String>,
++    #[serde(default)]
++    clear_online: bool,
++}
++
+ fn runtime() -> &'static AgentRuntime {
+     RUNTIME.get_or_init(AgentRuntime::default)
+ }
+@@ -319,6 +359,86 @@ fn now_ms() -> u64 {
+         .as_millis() as u64
+ }
+ 
++fn validated_online_runtime(
++    request: AgentOnlineRuntimeRequest,
++) -> Result<OnlineRuntimeConfig, String> {
++    if request.gateway_url.trim_end_matches('/') != ONLINE_GATEWAY_URL {
++        return Err("The AI gateway address is not trusted".to_string());
++    }
++    if !request.token.starts_with("art_")
++        || request.token.len() > 512
++        || !request.token.bytes().all(|byte| byte.is_ascii_graphic())
++    {
++        return Err("The AI runtime token is invalid".to_string());
++    }
++    if !(ONLINE_TOKEN_MIN_TTL_SECONDS..=ONLINE_TOKEN_MAX_TTL_SECONDS)
++        .contains(&request.expires_in)
++    {
++        return Err("The AI runtime token lifetime is invalid".to_string());
++    }
++    if request.allowed_models.is_empty() || request.allowed_models.len() > 16 {
++        return Err("The AI model authorization must contain 1 to 16 models".to_string());
++    }
++    let mut allowed_models = Vec::new();
++    for model in request.allowed_models {
++        if !valid_model_id(&model) {
++            return Err("The AI model authorization contains an invalid model".to_string());
++        }
++        if !allowed_models.iter().any(|allowed| allowed == &model) {
++            allowed_models.push(model);
++        }
++    }
++    if !allowed_models
++        .iter()
++        .any(|allowed| allowed == &request.default_model)
++    {
++        return Err("The default AI model is not authorized".to_string());
++    }
++    if !request.session_id.starts_with("ars_")
++        || request.session_id.len() > 128
++        || !request
++            .session_id
++            .bytes()
++            .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'-'))
++    {
++        return Err("The AI runtime session id is invalid".to_string());
++    }
++    Ok(OnlineRuntimeConfig {
++        gateway_url: ONLINE_GATEWAY_URL.to_string(),
++        token: request.token,
++        expires_at_ms: now_ms().saturating_add(request.expires_in.saturating_mul(1000)),
++        allowed_models,
++    })
++}
++
++pub fn configure_online_runtime(request: AgentOnlineRuntimeRequest) -> Result<(), String> {
++    let online_runtime = validated_online_runtime(request)?;
++    let mut state = lock_state()?;
++    state.online_runtime = Some(online_runtime);
++    state.last_error = None;
++    Ok(())
++}
++
++pub fn clear_online_runtime() {
++    if let Ok(mut state) = lock_state() {
++        state.online_runtime = None;
++    }
++}
++
++fn current_online_runtime() -> Result<Option<OnlineRuntimeConfig>, String> {
++    let mut state = lock_state()?;
++    if state.online_runtime.as_ref().is_some_and(|online| {
++        online.expires_at_ms <= now_ms().saturating_add(ONLINE_TOKEN_START_MARGIN_MS)
++    }) {
++        state.online_runtime = None;
++        state.last_error = Some(
++            "AI authorization expired. Return to the workspace and open AI Workbench again."
++                .to_string(),
++        );
++    }
++    Ok(state.online_runtime.clone())
++}
++
+ fn next_handle(prefix: &str) -> String {
+     let sequence = HANDLE_COUNTER.fetch_add(1, Ordering::Relaxed);
+     format!("{prefix}-{:x}-{sequence:x}", now_ms())
+@@ -351,6 +471,17 @@ fn validate_absolute_file(path: &Path, variable: &str) -> Result<PathBuf, String
+     Ok(resolved)
+ }
+ 
++fn windows_compatible_path(path: &Path) -> PathBuf {
++    let value = path.to_string_lossy();
++    if let Some(unc) = value.strip_prefix("\\\\?\\UNC\\") {
++        return PathBuf::from(format!("\\\\{unc}"));
++    }
++    if let Some(absolute) = value.strip_prefix("\\\\?\\") {
++        return PathBuf::from(absolute);
++    }
++    path.to_path_buf()
++}
++
+ fn valid_model_id(value: &str) -> bool {
+     value.len() <= 128
+         && value
+@@ -362,6 +493,10 @@ fn valid_model_id(value: &str) -> bool {
+             .all(|byte| byte.is_ascii_alphanumeric() || b"._:/-".contains(&byte))
+ }
+ 
++fn valid_effort(value: &str) -> bool {
++    matches!(value, "low" | "medium" | "high" | "xhigh" | "max")
++}
++
+ fn allowed_models() -> Result<Vec<String>, String> {
+     let configured = env::var(RUNTIME_MODELS_ENV).unwrap_or_else(|_| "default".to_string());
+     let mut models = Vec::new();
+@@ -406,6 +541,7 @@ fn bundled_runtime_paths(resource_dir: &Path) -> (PathBuf, PathBuf) {
+ }
+ 
+ fn runtime_config(app: &AppHandle) -> Result<RuntimeConfig, String> {
++    let online = current_online_runtime()?;
+     let (executable, entrypoint, source) = if let Some(executable) =
+         env::var_os(RUNTIME_EXECUTABLE_ENV).filter(|value| !value.is_empty())
+     {
+@@ -430,12 +566,22 @@ fn runtime_config(app: &AppHandle) -> Result<RuntimeConfig, String> {
+         let entrypoint = validate_absolute_file(&entrypoint, "bundled CCB entrypoint")?;
+         (executable, Some(entrypoint), RuntimeSource::Bundled)
+     };
++    if source == RuntimeSource::Bundled && online.is_none() {
++        return Err(
++            "Sign in to Claritide and open AI Workbench again to authorize AI access".to_string(),
++        );
++    }
++    let models = match &online {
++        Some(online) => online.allowed_models.clone(),
++        None => allowed_models()?,
++    };
+     Ok(RuntimeConfig {
+         executable,
+         entrypoint,
+-        models: allowed_models()?,
++        models,
+         tools_mode: ToolsMode::from_env()?,
+         source,
++        online,
+     })
+ }
+ 
+@@ -1459,7 +1605,7 @@ pub fn agent_get_status(app: AppHandle) -> AgentStatus {
+     let allowed_models = config
+         .as_ref()
+         .map(|config| config.models.clone())
+-        .unwrap_or_else(|_| allowed_models().unwrap_or_default());
++        .unwrap_or_default();
+     let (sessions, runtime_error) = lock_state()
+         .map(|state| {
+             let sessions = state
+@@ -1471,6 +1617,7 @@ pub fn agent_get_status(app: AppHandle) -> AgentStatus {
+                     workspace_id: session.workspace_id.clone(),
+                     workspace_name: session.workspace_name.clone(),
+                     model: session.model.clone(),
++                    effort: session.effort.clone(),
+                     permission: session.permission.as_str().to_string(),
+                 })
+                 .collect();
+@@ -1490,6 +1637,7 @@ pub fn agent_get_status(app: AppHandle) -> AgentStatus {
+         capabilities: AgentCapabilities {
+             workspace: true,
+             models: true,
++            effort: true,
+             streaming: true,
+             stop: true,
+             resume: false,
+@@ -1504,6 +1652,7 @@ pub fn agent_get_status(app: AppHandle) -> AgentStatus {
+             "listModels",
+             "listSessions",
+             "selectWorkspace",
++            "effort",
+             "startSession",
+             "send",
+             "stop",
+@@ -1546,7 +1695,9 @@ pub async fn agent_select_workspace(app: AppHandle) -> Result<Option<AgentWorksp
+     Ok(Some(AgentWorkspace {
+         id,
+         name,
+-        path: path.to_string_lossy().into_owned(),
++        path: windows_compatible_path(&path)
++            .to_string_lossy()
++            .into_owned(),
+     }))
+ }
+ 
+@@ -1569,7 +1720,11 @@ pub fn agent_start(
+     let config = runtime_config(&app)?;
+     let model = request.model.unwrap_or_else(|| config.models[0].clone());
+     if !config.models.iter().any(|allowed| allowed == &model) {
+-        return Err("The requested model is not in the local development allowlist".to_string());
++        return Err("The requested model is not authorized for this account".to_string());
++    }
++    let effort = request.effort.unwrap_or_else(|| "high".to_string());
++    if !valid_effort(&effort) {
++        return Err("effort must be low, medium, high, xhigh, or max".to_string());
+     }
+ 
+     let config_dir = crate::dirs::get_config_dir()
+@@ -1614,7 +1769,10 @@ pub fn agent_start(
+ 
+         let mut command = Command::new(&config.executable);
+         if let Some(entrypoint) = &config.entrypoint {
+-            command.arg(entrypoint);
++            // std::fs::canonicalize returns a \\?\-prefixed path on Windows.
++            // Node.js 22 treats that form as a main-module URL and can reduce it
++            // to the drive root (for example, C:), exiting with EISDIR.
++            command.arg(windows_compatible_path(entrypoint));
+         }
+         command
+             .args(runtime_args(
+@@ -1627,10 +1785,28 @@ pub fn agent_start(
+             .env("CLAUDE_CONFIG_DIR", &config_dir)
+             .env("CLAUDE_CODE_SIMPLE", "1")
+             .env("CLAUDE_CODE_DISABLE_GIT_INSTRUCTIONS", "1")
++            .env("CLAUDE_CODE_EFFORT_LEVEL", &effort)
+             .env_remove("CLAUDE_CODE_RESUME_INTERRUPTED_TURN")
+             .stdin(Stdio::piped())
+             .stdout(Stdio::piped())
+             .stderr(Stdio::piped());
++        for variable in [
++            "CLAUDE_CODE_USE_OPENAI",
++            "OPENAI_BASE_URL",
++            "OPENAI_API_KEY",
++            "OPENAI_MODEL",
++            "ANTHROPIC_BASE_URL",
++            "ANTHROPIC_API_KEY",
++        ] {
++            command.env_remove(variable);
++        }
++        if let Some(online) = &config.online {
++            command
++                .env("CLAUDE_CODE_USE_OPENAI", "1")
++                .env("OPENAI_BASE_URL", &online.gateway_url)
++                .env("OPENAI_API_KEY", &online.token)
++                .env("OPENAI_MODEL", &model);
++        }
+         #[cfg(target_os = "windows")]
+         command.creation_flags(0x08000000);
+ 
+@@ -1665,6 +1841,7 @@ pub fn agent_start(
+                 workspace_id: request.workspace.clone(),
+                 workspace_name,
+                 model: model.clone(),
++                effort: effort.clone(),
+                 permission: request.permission,
+                 events: VecDeque::new(),
+                 queued_event_bytes: 0,
+@@ -1699,6 +1876,7 @@ pub fn agent_start(
+     Ok(AgentStartResponse {
+         session_id: request.client_session_id,
+         model,
++        effort,
+         workspace: request.workspace,
+         permission: request.permission.as_str().to_string(),
+     })
+@@ -1765,12 +1943,22 @@ pub fn agent_interrupt(request: AgentSessionRequest) -> Result<(), String> {
+ }
+ 
+ #[tauri::command]
+-pub fn agent_close(request: AgentSessionRequest) -> Result<(), String> {
++pub fn agent_close(request: AgentCloseRequest) -> Result<(), String> {
+     let (session_id, generation, child, end_session_queued) = {
+         let mut state = lock_state()?;
++        if request.clear_online {
++            state.online_runtime = None;
++        }
++        let Some(session_id) = request.session_id else {
++            return if request.clear_online {
++                Ok(())
++            } else {
++                Err("sessionId is required".to_string())
++            };
++        };
+         let session = state
+             .sessions
+-            .get_mut(&request.session_id)
++            .get_mut(&session_id)
+             .ok_or_else(|| "Unknown agent session".to_string())?;
+         if matches!(
+             session.phase,
+@@ -1795,7 +1983,7 @@ pub fn agent_close(request: AgentSessionRequest) -> Result<(), String> {
+         // and then closes stdin. If the queue is unavailable, kill immediately.
+         session.writer.take();
+         (
+-            request.session_id,
++            session_id,
+             session.generation,
+             session.child.clone(),
+             end_session_queued,
+@@ -1880,6 +2068,7 @@ pub fn agent_poll_events(session_id: Option<String>) -> Result<Vec<AgentEvent>,
+ pub fn close_all() {
+     let children = lock_state()
+         .map(|mut state| {
++            state.online_runtime = None;
+             state
+                 .sessions
+                 .values_mut()
+@@ -1907,8 +2096,9 @@ mod tests {
+     use super::{
+         advance_seq, bundled_runtime_paths, mismatched_session_id, new_uuid_v4,
+         normalize_ndjson_line, read_bounded_lines, remember_protocol_id, result_fallback_text,
+-        runtime_args, user_message, valid_model_id, valid_session_id, AgentPermissionMode,
+-        BoundedLine, ToolsMode,
++        runtime_args, user_message, valid_effort, valid_model_id, valid_session_id,
++        validated_online_runtime, windows_compatible_path, AgentOnlineRuntimeRequest,
++        AgentPermissionMode, BoundedLine, ToolsMode,
+     };
+     use std::collections::{HashSet, VecDeque};
+     use std::path::Path;
+@@ -1920,6 +2110,43 @@ mod tests {
+         assert!(valid_model_id("openai/gpt-5.6-sol"));
+         assert!(!valid_model_id("model --tools Bash"));
+         assert!(!valid_model_id("--dangerously-skip-permissions"));
++        assert!(valid_effort("low"));
++        assert!(valid_effort("xhigh"));
++        assert!(valid_effort("max"));
++        assert!(!valid_effort("ultracode"));
++        assert!(!valid_effort("high --tools Bash"));
++    }
++
++    fn online_request() -> AgentOnlineRuntimeRequest {
++        AgentOnlineRuntimeRequest {
++            gateway_url: "https://watch.sding.me/api/v1/agent-ai/openai/v1".to_string(),
++            token: "art_ephemeral_test_token".to_string(),
++            expires_in: 900,
++            default_model: "gpt-5.6-sol".to_string(),
++            allowed_models: vec!["gpt-5.6-sol".to_string(), "gpt-5.6-terra".to_string()],
++            session_id: "ars_test_session".to_string(),
++        }
++    }
++
++    #[test]
++    fn validates_online_gateway_token_ttl_and_model_authorization() {
++        assert!(validated_online_runtime(online_request()).is_ok());
++
++        let mut untrusted = online_request();
++        untrusted.gateway_url = "https://gateway.example/v1".to_string();
++        assert!(validated_online_runtime(untrusted).is_err());
++
++        let mut invalid_token = online_request();
++        invalid_token.token = "persistent-account-token".to_string();
++        assert!(validated_online_runtime(invalid_token).is_err());
++
++        let mut invalid_ttl = online_request();
++        invalid_ttl.expires_in = 86_400;
++        assert!(validated_online_runtime(invalid_ttl).is_err());
++
++        let mut unauthorized_default = online_request();
++        unauthorized_default.default_model = "gpt-5.5".to_string();
++        assert!(validated_online_runtime(unauthorized_default).is_err());
+     }
+ 
+     #[test]
+@@ -2006,6 +2233,18 @@ mod tests {
+         );
+     }
+ 
++    #[test]
++    fn strips_windows_verbatim_prefix_before_passing_node_entrypoint() {
++        assert_eq!(
++            windows_compatible_path(Path::new(r"\\?\C:\Program Files\Claritide\cli-node.js")),
++            Path::new(r"C:\Program Files\Claritide\cli-node.js")
++        );
++        assert_eq!(
++            windows_compatible_path(Path::new(r"\\?\UNC\server\share\cli-node.js")),
++            Path::new(r"\\server\share\cli-node.js")
++        );
++    }
++
+     #[test]
+     fn controlled_args_force_structured_permissions_without_bypass() {
+         let args = runtime_args(
+diff --git a/src-tauri/src/agent_workbench.rs b/src-tauri/src/agent_workbench.rs
+index 38dc896..94d5a78 100644
+--- a/src-tauri/src/agent_workbench.rs
++++ b/src-tauri/src/agent_workbench.rs
+@@ -1,6 +1,8 @@
+ use log::{info, warn};
+ use tauri::{AppHandle, Manager, Url};
+ 
++use crate::agent_runtime::{self, AgentOnlineRuntimeRequest};
++
+ pub const WINDOW_LABEL: &str = "main";
+ pub const URI_SCHEME: &str = "claritide-agent";
+ pub const HTML: &str = include_str!("../assets/agent-workbench.html");
+@@ -28,16 +30,22 @@ fn normalized_locale(locale: Option<&str>) -> &'static str {
+     }
+ }
+ 
++fn workbench_url(locale: Option<&str>, use_windows_protocol_mapping: bool) -> Result<Url, String> {
++    let origin = if use_windows_protocol_mapping {
++        "http://claritide-agent.localhost"
++    } else {
++        "claritide-agent://localhost"
++    };
++    format!("{origin}/?locale={}", normalized_locale(locale))
++        .parse()
++        .map_err(|error| format!("Unable to build local agent URL: {error}"))
++}
++
+ pub fn open(app: &AppHandle, locale: Option<&str>) -> Result<(), String> {
+     let window = app
+         .get_webview_window(WINDOW_LABEL)
+         .ok_or_else(|| "Claritide main window is unavailable".to_string())?;
+-    let url = format!(
+-        "{URI_SCHEME}://localhost/?locale={}",
+-        normalized_locale(locale)
+-    )
+-    .parse()
+-    .map_err(|error| format!("Unable to build local agent URL: {error}"))?;
++    let url = workbench_url(locale, cfg!(target_os = "windows"))?;
+     window
+         .navigate(url)
+         .map_err(|error| format!("Unable to open Claritide AI Workbench: {error}"))?;
+@@ -49,7 +57,7 @@ pub fn open(app: &AppHandle, locale: Option<&str>) -> Result<(), String> {
+ 
+ #[cfg(test)]
+ mod tests {
+-    use super::{main_navigation_allowed, normalized_locale};
++    use super::{main_navigation_allowed, normalized_locale, workbench_url};
+ 
+     #[test]
+     fn workbench_locale_is_strictly_normalized() {
+@@ -59,6 +67,18 @@ mod tests {
+         assert_eq!(normalized_locale(None), "zh-CN");
+     }
+ 
++    #[test]
++    fn workbench_url_uses_the_windows_custom_protocol_mapping() {
++        assert_eq!(
++            workbench_url(Some("en"), true).unwrap().as_str(),
++            "http://claritide-agent.localhost/?locale=en"
++        );
++        assert_eq!(
++            workbench_url(Some("zh-CN"), false).unwrap().as_str(),
++            "claritide-agent://localhost/?locale=zh-CN"
++        );
++    }
++
+     #[test]
+     fn main_window_navigation_allows_only_claritide_surfaces() {
+         assert!(main_navigation_allowed(
+@@ -83,8 +103,14 @@ mod tests {
+ }
+ 
+ #[tauri::command]
+-pub async fn open_agent_workbench(app: AppHandle, locale: Option<String>) -> Result<(), String> {
++pub async fn open_agent_workbench(
++    app: AppHandle,
++    locale: Option<String>,
++    runtime: AgentOnlineRuntimeRequest,
++) -> Result<(), String> {
++    agent_runtime::configure_online_runtime(runtime)?;
+     open(&app, locale.as_deref()).map_err(|error| {
++        agent_runtime::clear_online_runtime();
+         warn!("{error}");
+         error
+     })
+diff --git a/src-tauri/src/seeseeyou_bridge.js b/src-tauri/src/seeseeyou_bridge.js
+index 92a2e6d..a28bcda 100644
+--- a/src-tauri/src/seeseeyou_bridge.js
++++ b/src-tauri/src/seeseeyou_bridge.js
+@@ -13,6 +13,7 @@
+   var syncRerunRequested = false;
+   var syncClearPending = false;
+   var loggingOut = false;
++  var agentActivationRunning = false;
+   var rebindRequired = false;
+   var lastSessionToken = '';
+   var lastTeamSelection = '';
+@@ -40,7 +41,7 @@
+     value: Object.freeze({
+       capabilityVersion: 1,
+       openWorkbench: function () {
+-        return invoke('open_agent_workbench', { locale: isEnglish() ? 'en' : 'zh-CN' });
++        return openAgentWorkbench();
+       }
+     }),
+     configurable: false,
+@@ -103,24 +104,229 @@
+     return true;
+   }
+ 
++  function showAgentWorkbenchTransition() {
++    var existing = document.getElementById('claritideAgentTransition');
++    if (existing) return function () {};
++    var overlay = document.createElement('div');
++    overlay.id = 'claritideAgentTransition';
++    overlay.setAttribute('role', 'status');
++    overlay.setAttribute('aria-live', 'polite');
++    overlay.textContent = copy('正在打开 AI 工作台…', 'Opening AI Workbench…');
++    overlay.style.cssText = [
++      'position:fixed',
++      'inset:0',
++      'z-index:2147483647',
++      'display:grid',
++      'place-items:center',
++      'background:#f7f7f5',
++      'color:#4d514c',
++      'font:600 14px Inter,system-ui,sans-serif'
++    ].join(';');
++    document.documentElement.appendChild(overlay);
++    return function () {
++      if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
++    };
++  }
++
++  function agentRuntimeErrorMessage(error) {
++    var status = Number(error && error.status || 0);
++    var code = String(error && error.code || '');
++    if (status === 401) {
++      return copy('登录状态已失效，请重新登录后再试。', 'Your sign-in expired. Please sign in again.');
++    }
++    if (status === 403 || code === 'runtime_device_not_authorized') {
++      return copy(
++        '当前账号、团队或设备尚未获得 AI 使用权限，请联系团队管理员。',
++        'This account, team, or device is not authorized to use AI. Contact your team administrator.'
++      );
++    }
++    if (status === 429) {
++      return copy('AI 使用额度暂时不可用，请稍后再试。', 'AI usage is temporarily unavailable. Please try again later.');
++    }
++    if (status === 503) {
++      return copy('AI 服务暂时不可用，请稍后再试。', 'The AI service is temporarily unavailable. Please try again later.');
++    }
++    return copy('无法打开 AI 工作台：', 'Unable to open AI Workbench: ') +
++      String(error && error.message ? error.message : error);
++  }
++
++  async function revokeRuntimeToken(token) {
++    if (!token) return;
++    try {
++      await apiRequest('/me/ai/runtime-token/revoke', {
++        method: 'POST',
++        headers: { 'X-Agent-Runtime-Token': token }
++      });
++    } catch (_error) {}
++  }
++
++  function runtimeDeviceNotAuthorized(error) {
++    return Number(error && error.status || 0) === 403 &&
++      String(error && error.code || '') === 'runtime_device_not_authorized';
++  }
++
++  async function waitForSyncIdle() {
++    var deadline = Date.now() + 5000;
++    while (syncRunning && Date.now() < deadline) {
++      await new Promise(function (resolve) { window.setTimeout(resolve, 100); });
++    }
++  }
++
++  async function activateAgentInstallation(installation, token) {
++    await waitForSyncIdle();
++    agentActivationRunning = true;
++    try {
++      var teamData = await apiRequest('/me/teams', {}, token);
++      var teams = Array.isArray(teamData && teamData.items) ? teamData.items : [];
++      if (!teams.length) {
++        throw Object.assign(new Error('Join an active team to use the AI Workbench'), {
++          status: 403,
++          code: 'no_active_team'
++        });
++      }
++
++      var status = await invoke('get_sync_status').catch(function () { return null; });
++      if (status && status.employee_id && status.employee_id !== teamData.employee_id) {
++        await invoke('clear_sync');
++        status = null;
++      }
++      var statusTeam = status && status.team_id && teams.some(function (team) {
++        return team.team_id === status.team_id;
++      }) ? status.team_id : '';
++      var teamId = statusTeam || selectedTeam(teams);
++      if (!teamId) {
++        throw Object.assign(new Error('Select the current team before opening the AI Workbench'), {
++          status: 409,
++          code: 'team_selection_required'
++        });
++      }
++
++      var platform = desktopPlatform();
++      var enrollment = await apiRequest('/devices/auto-enroll', {
++        method: 'POST',
++        headers: { 'X-Team-ID': teamId },
++        body: JSON.stringify({
++          installation_id: String(installation || ''),
++          device_name: 'Claritide ' + platform,
++          platform: platform
++        })
++      }, token);
++      window.localStorage.setItem(DEVICE_KEY, String(enrollment.device.device_id));
++      await invoke('configure_sync', {
++        config: {
++          server_url: TRUSTED_ORIGIN,
++          local_api_url: 'http://localhost:5600/api/0',
++          device_id: enrollment.device.device_id,
++          employee_id: enrollment.device.employee_id,
++          team_id: enrollment.device.team_id,
++          device_key: enrollment.credentials.device_token,
++          hmac_secret: enrollment.credentials.hmac_secret
++        }
++      });
++      rebindRequired = false;
++      lastSessionToken = token;
++      lastTeamSelection = window.localStorage.getItem(TEAM_KEY) || '';
++      lastNativeTriggerAt = Date.now();
++      setSyncState('connecting', copy('正在连接当前电脑。', 'Connecting this computer.'));
++      window.setTimeout(function () { ensureDesktopSync(true); }, 1800);
++    } finally {
++      agentActivationRunning = false;
++    }
++  }
++
++  async function agentRuntimeConfig(installation, token) {
++    var query = '?installation_id=' + encodeURIComponent(String(installation || ''));
++    try {
++      return await apiRequest('/me/ai/runtime-config' + query, {}, token);
++    } catch (error) {
++      if (!runtimeDeviceNotAuthorized(error)) throw error;
++      await activateAgentInstallation(installation, token);
++      return apiRequest('/me/ai/runtime-config' + query, {}, token);
++    }
++  }
++
++  async function openAgentWorkbench() {
++    var token = sessionToken();
++    if (!token) {
++      throw Object.assign(new Error('Sign-in required'), { status: 401 });
++    }
++    var installation = await installationId();
++    var config = await agentRuntimeConfig(installation, token);
++    if (!config || config.enabled !== true) {
++      throw Object.assign(new Error('AI runtime is not enabled'), {
++        status: 403,
++        code: 'runtime_device_not_authorized'
++      });
++    }
++    var issued = await apiRequest('/me/ai/runtime-token', {
++      method: 'POST',
++      body: JSON.stringify({
++        installation_id: String(installation || ''),
++        model: String(config.default_model || ''),
++        client_version: DESKTOP_VERSION
++      })
++    });
++    var runtimeToken = String(issued && issued.token || '');
++    try {
++      return await invoke('open_agent_workbench', {
++        locale: isEnglish() ? 'en' : 'zh-CN',
++        runtime: {
++          gatewayUrl: String(config.gateway_url || ''),
++          token: runtimeToken,
++          expiresIn: Number(issued && issued.expires_in || 0),
++          defaultModel: String(issued && issued.default_model || config.default_model || ''),
++          allowedModels: Array.isArray(issued && issued.allowed_models)
++            ? issued.allowed_models.map(String)
++            : [],
++          sessionId: String(issued && issued.session_id || '')
++        }
++      });
++    } catch (error) {
++      await revokeRuntimeToken(runtimeToken);
++      throw error;
++    }
++  }
++
++  function launchAgentWorkbench(button, event) {
++    if (event) {
++      event.preventDefault();
++      if (typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation();
++      else event.stopPropagation();
++    }
++    if (button.disabled) return;
++    button.disabled = true;
++    var clearTransition = showAgentWorkbenchTransition();
++    openAgentWorkbench().then(function () {
++      clearTransition();
++      button.disabled = false;
++    }).catch(function (error) {
++      clearTransition();
++      button.disabled = false;
++      showDesktopError(agentRuntimeErrorMessage(error));
++    });
++  }
++
+   function ensureAgentWorkbenchEntry() {
+     var nav = document.querySelector('.global-nav');
+     if (!nav) return null;
+-    var button = document.getElementById('navAgentWorkbench');
++    var assistantButton = document.getElementById('navAssistant');
++    var generatedButton = document.getElementById('navAgentWorkbench');
++    var button = assistantButton || generatedButton;
++    if (assistantButton && generatedButton && generatedButton !== assistantButton && generatedButton.parentNode) {
++      generatedButton.parentNode.removeChild(generatedButton);
++    }
+     if (!button) {
+       button = document.createElement('button');
+       button.id = 'navAgentWorkbench';
+       button.type = 'button';
+-      button.addEventListener('click', function (event) {
+-        event.preventDefault();
+-        event.stopPropagation();
+-        invoke('open_agent_workbench').catch(function (error) {
+-          showDesktopError(copy('无法打开 AI 工作台：', 'Unable to open AI Workbench: ') +
+-            String(error && error.message ? error.message : error));
+-        });
+-      });
+       nav.appendChild(button);
+     }
++    if (button.dataset.claritideAgentEntry !== '1') {
++      button.dataset.claritideAgentEntry = '1';
++      button.addEventListener('click', function (event) {
++        launchAgentWorkbench(button, event);
++      }, true);
++    }
+     button.hidden = false;
+     button.textContent = copy('AI 工作台', 'AI Workbench');
+     button.setAttribute('aria-label', button.textContent);
+@@ -398,7 +604,7 @@
+   }
+ 
+   async function ensureDesktopSync(force) {
+-    if (loggingOut) return;
++    if (loggingOut || agentActivationRunning) return;
+     var token = sessionToken();
+     var teamSelection = window.localStorage.getItem(TEAM_KEY) || '';
+     if (syncRunning) {

@@ -8,22 +8,22 @@ if (!bridgePath) {
   throw new Error('CLARITIDE_AGENT_BRIDGE_PATH must point to agent_workbench_bridge.js');
 }
 
-function loadBridge(invoke) {
+function loadBridge(invoke, location = {
+  protocol: 'claritide-agent:',
+  hostname: 'localhost',
+  port: '',
+}) {
   let intervalCallback = null;
   let cleared = false;
   const window = {
     __CLARITIDE_AGENT_BRIDGE_TEST_MODE__: true,
     __TAURI_INTERNALS__: { invoke },
-    location: {
-      protocol: 'claritide-agent:',
-      hostname: 'localhost',
-      port: '',
-    },
+    location,
     setInterval(callback) { intervalCallback = callback; return 7; },
     clearInterval(id) { assert.equal(id, 7); cleared = true; },
   };
   window.top = window;
-  const context = { window, console, Date, Error, Object, Promise, Set, TypeError };
+  const context = { window, console, Date, Error, Object, Promise, Set, TypeError, URLSearchParams };
   vm.runInNewContext(fs.readFileSync(bridgePath, 'utf8'), context, { filename: bridgePath });
   return {
     window,
@@ -33,6 +33,32 @@ function loadBridge(invoke) {
     get cleared() { return cleared; },
   };
 }
+
+test('local bridge initializes on the Windows custom-protocol mapping', () => {
+  const harness = loadBridge(async () => null, {
+    protocol: 'http:',
+    hostname: 'claritide-agent.localhost',
+    port: '',
+  });
+  assert.equal(harness.bridge.capabilityVersion, 2);
+});
+
+test('workbench readiness acknowledges the exact launch attempt only when requested', async () => {
+  const calls = [];
+  const harness = loadBridge(async (command, args) => { calls.push([command, args]); }, {
+    protocol: 'http:', hostname: 'claritide-agent.localhost', port: '',
+    search: '?locale=zh-CN&attempt=53c6ebe2-b5a2-4db4-8c54-0df5c90fa7a5',
+  });
+  assert.equal(calls.length, 0, 'bridge injection must not signal an initialized app');
+  const urls = [];
+  harness.window.history = { replaceState(_state, _title, url) { urls.push(url); } };
+  await harness.bridge.markReady();
+  assert.equal(calls[0][0], 'agent_workbench_ready');
+  assert.equal(calls[0][1].attemptId, '53c6ebe2-b5a2-4db4-8c54-0df5c90fa7a5');
+  assert.deepEqual(urls, ['/?locale=zh-CN']);
+  const reload = loadBridge(async (command) => { throw new Error('Unexpected command: ' + command); });
+  await reload.bridge.markReady();
+});
 
 test('local bridge exposes the capability-v2 surface', async () => {
   const calls = [];
@@ -68,6 +94,22 @@ test('local bridge exposes the capability-v2 surface', async () => {
   assert.equal(Object.getOwnPropertyDescriptor(harness.window, '__CLARITIDE_CCB__').writable, false);
 });
 
+test('workspace restoration forwards only to the local native command and preserves rejection', async () => {
+  const calls = [];
+  const workspace = { id: 'new-native-grant', path: 'C:\\Work\\July', name: 'July' };
+  const harness = loadBridge(async (command, args) => {
+    calls.push([command, args]);
+    return workspace;
+  });
+  assert.equal(await harness.bridge.restoreWorkspace({ path: workspace.path }), workspace);
+  assert.equal(calls[0][0], 'agent_restore_workspace');
+  assert.equal(calls[0][1].request.path, workspace.path);
+  assert.throws(() => harness.bridge.restoreWorkspace(null), /object/);
+  const failure = new Error('Workspace grant storage is unavailable');
+  const rejected = loadBridge(async () => { throw failure; });
+  await assert.rejects(rejected.bridge.restoreWorkspace({ path: workspace.path }), error => error === failure);
+});
+
 test('event subscription polls normalized events and stops after unsubscribe', async () => {
   let polls = 0;
   const harness = loadBridge(async command => {
@@ -91,12 +133,18 @@ test('event subscription polls normalized events and stops after unsubscribe', a
   assert.equal(harness.cleared, true);
 });
 
-test('resume is explicit unsupported capability', async () => {
-  const harness = loadBridge(async () => null);
-  await assert.rejects(
-    harness.bridge.resume({ sessionId: 'one' }),
-    error => error && error.code === 'unsupported',
-  );
+test('resume and approval use only the existing local command surface', async () => {
+  const calls = [];
+  const harness = loadBridge(async (command, args) => { calls.push([command, args]); });
+  await harness.bridge.resume({ clientSessionId: 'one', workspace: 'opaque' });
+  await harness.bridge.respondToApproval({ sessionId: 'one', requestId: 'approval-one', decision: 'allow_once' });
+  assert.equal(calls[0][0], 'agent_start');
+  assert.equal(calls[0][1].request.resume, true);
+  assert.equal(calls[0][1].request.clientSessionId, 'one');
+  assert.equal(calls[1][0], 'agent_send');
+  assert.equal(calls[1][1].request.approval.decision, 'allow_once');
+  assert.equal(calls[1][1].request.approval.requestId, 'approval-one');
+  assert.equal(calls[1][1].request.content, undefined);
 });
 
 test('bridge does not initialize without Tauri internals', () => {
