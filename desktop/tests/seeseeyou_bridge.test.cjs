@@ -64,7 +64,7 @@ function loadBridge({
     const value = await invoke(command, args);
     if (command === 'get_sync_status' && value && typeof value === 'object') {
       return {
-        desktop_version: '0.2.2',
+        desktop_version: '0.2.3',
         bridge_protocol: 2,
         ...value,
       };
@@ -365,6 +365,7 @@ test('recent server-acknowledged upload stays healthy despite a stale worker err
           team_id: 'team-a',
           device_id: 'device-a',
           last_success_at_ms: now - 30000,
+          last_attempt_at_ms: now - 40000,
           last_error: 'an older timeout',
         };
       }
@@ -460,7 +461,7 @@ test('recent server activity overrides a stale native worker error', async () =>
       calls.push(command);
       if (command === 'get_sync_status') {
         return {
-          desktop_version: '0.2.2',
+          desktop_version: '0.2.3',
           bridge_protocol: 2,
           configured: true,
           paused: false,
@@ -468,6 +469,7 @@ test('recent server activity overrides a stale native worker error', async () =>
           team_id: 'team-a',
           device_id: 'device-a',
           last_success_at_ms: now - 30000,
+          last_attempt_at_ms: now - 40000,
           last_error: 'old timeout that already recovered',
         };
       }
@@ -656,4 +658,36 @@ test('desktop logout restores the session if the final native clear fails', asyn
   assert.equal(harness.reloads, 0);
   assert.match(button.title, /无法完成安全退出/);
   assert.match(harness.alerts[0], /locked/);
+});
+
+for (const [name, status, expected] of [
+  ['first empty pass', { last_run_outcome: 'idle' }, 'waiting'],
+  ['new error after a recent success', { last_success_at_ms: Date.now()-30000, last_attempt_at_ms: Date.now()-1000, last_run_outcome:'error', last_error:'certificate verification failed' }, 'error'],
+  ['error without a known attempt timestamp', { last_success_at_ms:Date.now()-30000,last_error:'network failed' },'error'],
+  ['stale upload receipt', { last_success_at_ms:Date.now()-20*60*1000 },'waiting'],
+]) {
+  test(`sync badge does not turn green for ${name}`, async () => {
+    const calls=[];
+    const harness=loadBridge({initialStorage:{my_day_session_token:'token',my_day_selected_team_id:'team-a'},
+      invoke:async command=>{ calls.push(command); if(command==='get_sync_status') return {configured:true,paused:false,binary_ready:true,employee_id:'employee-a',team_id:'team-a',...status}; return null; },
+      fetch:async url=>{ if(url.endsWith('/me/teams')) return response({employee_id:'employee-a',items:[{team_id:'team-a',name:'Team A'}]}); throw new Error('Unexpected endpoint'); }});
+    await harness.bridge.ensureDesktopSync(false);
+    assert.equal(harness.bridge.getSyncViewState().state,expected);
+    assert.equal(calls.includes('configure_sync'),false);
+    if(status.last_run_outcome==='idle') assert.equal(calls.includes('trigger_sync_now'),false);
+  });
+}
+test('management-only session is not mislabeled as expired and never enrolls a device',async()=>{
+  const calls=[];
+  const harness=loadBridge({initialStorage:{my_day_session_token:'token'},
+    invoke:async command=>{calls.push(command);if(command==='get_sync_status')return{configured:false};return null;},
+    fetch:async url=>{
+      if(url.endsWith('/me/teams'))return response({detail:'invalid session'},401);
+      if(url.endsWith('/auth/me'))return response({user:{is_admin:true,employee_id:null}});
+      throw new Error('Unexpected endpoint');
+    }});
+  await harness.bridge.ensureDesktopSync(false);
+  assert.equal(harness.bridge.getSyncViewState().state,'waiting');
+  assert.match(harness.bridge.getSyncViewState().detail,/员工身份|employee profile/);
+  assert.equal(calls.includes('configure_sync'),false);
 });

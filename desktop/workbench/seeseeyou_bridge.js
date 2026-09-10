@@ -3,7 +3,7 @@
 
   var TRUSTED_ORIGIN = 'https://watch.sding.me';
   var API = TRUSTED_ORIGIN + '/api/v1';
-  var DESKTOP_VERSION = '0.2.2';
+  var DESKTOP_VERSION = '0.2.3';
   var BRIDGE_PROTOCOL = 2;
   var TOKEN_KEYS = ['usage_admin_token', 'my_day_session_token'];
   var TEAM_KEY = 'my_day_selected_team_id';
@@ -709,8 +709,11 @@
   }
 
   function recentSuccessfulUpload(status) {
+    if (!status || status.running || status.paused || status.last_run_outcome === 'error') return false;
     var lastSuccess = Number(status && status.last_success_at_ms);
     if (!Number.isFinite(lastSuccess) || lastSuccess <= 0) return false;
+    var lastAttempt = Number(status.last_attempt_at_ms);
+    if (status.last_error && (!Number.isFinite(lastAttempt) || lastAttempt >= lastSuccess)) return false;
     var ageMs = Date.now() - lastSuccess;
     return ageMs >= -60000 && ageMs <= 15 * 60 * 1000;
   }
@@ -812,7 +815,23 @@
         syncRerunRequested = true;
         return;
       }
-      var teamData = await apiRequest('/me/teams', {}, token);
+      var teamData;
+      try {
+        teamData = await apiRequest('/me/teams', {}, token);
+      } catch (teamError) {
+        if (teamError && teamError.status === 401) {
+          var identity = await apiRequest('/auth/me', {}, token);
+          if (syncContextChanged(token, teamSelection)) { syncRerunRequested = true; return; }
+          if (identity && identity.user && identity.user.is_admin && !identity.user.employee_id) {
+            if (status && status.configured && !status.paused) await invoke('pause_sync');
+            setSyncState('waiting', copy('此管理账号未关联员工身份，不采集个人活动。',
+              'This management account has no employee profile; personal activity is not collected.'),
+              copy('● 管理模式', '● Management mode'));
+            return;
+          }
+        }
+        throw teamError;
+      }
       if (syncContextChanged(token, teamSelection)) {
         syncRerunRequested = true;
         return;
@@ -827,16 +846,6 @@
       }
 
       var versionIssue = desktopVersionIssue(status);
-      if (recentSuccessfulUpload(status)) {
-        var healthyDetail = copy('最近一次上传已被线上服务接受：',
-          'The latest upload was accepted by the online service: ') +
-          new Date(Number(status.last_success_at_ms)).toLocaleString() + '。';
-        if (versionIssue) healthyDetail += ' ' + versionIssue;
-        setSyncState('active', healthyDetail, versionIssue
-          ? copy('● 同步正常 · 版本待更新', '● Sync healthy · Update available')
-          : copy('● 同步正常', '● Sync healthy'));
-        return;
-      }
       if (nativeStatusError) {
         setSyncState('diagnostic', copy('本机状态查询失败：', 'Local status check failed: ') +
           rawErrorMessage(nativeStatusError));
@@ -887,6 +896,16 @@
           window.setTimeout(function () { ensureDesktopSync(true); }, 1800);
           return;
         }
+        if (recentSuccessfulUpload(status)) {
+          var healthyDetail = copy('最近一次上传已被线上服务接受：',
+            'The latest upload was accepted by the online service: ') +
+            new Date(Number(status.last_success_at_ms)).toLocaleString() + '。';
+          if (versionIssue) healthyDetail += ' ' + versionIssue;
+          setSyncState('active', healthyDetail, versionIssue
+            ? copy('● 同步正常 · 版本待更新', '● Sync healthy · Update available')
+            : copy('● 同步正常', '● Sync healthy'));
+          return;
+        }
         if (status.last_error) {
           if (force && Date.now() - lastNativeTriggerAt > 10000) {
             lastNativeTriggerAt = Date.now();
@@ -897,6 +916,12 @@
           }
           throw new Error(copy('最近一次后台同步未成功：', 'The latest background sync failed: ') +
             String(status.last_error));
+        }
+        if (status.last_run_outcome === 'idle' && !status.running) {
+          setSyncState('waiting', copy('正在等待新的完整采集窗口，收到服务器确认后才会显示同步正常。',
+            'Waiting for a complete collection window. Sync is healthy only after a server acknowledgement.'),
+            status.last_success_at_ms ? copy('● 等待新数据', '● Waiting for data') : copy('● 等待首批数据', '● Waiting for first data'));
+          return;
         }
         if (status.running || !status.last_success_at_ms) {
           if (!status.running && Date.now() - lastNativeTriggerAt > 10000) {
@@ -914,7 +939,7 @@
               'The page is showing another team. To protect historical attribution, local activity remains synced to ') + boundTeamName
           : copy('最近一次同步已成功。本机活动固定同步至 ',
               'The latest sync succeeded. Local activity is assigned to ') + boundTeamName;
-        setSyncState('active', detail, copy('● 同步正常', '● Sync healthy'));
+        setSyncState('waiting', detail + copy('；最近 15 分钟尚未收到新的上传确认。', '; no new upload has been acknowledged in the last 15 minutes.'), copy('● 等待上传确认', '● Waiting for upload'));
         return;
       }
 
